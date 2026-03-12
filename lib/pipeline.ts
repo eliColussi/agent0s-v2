@@ -338,9 +338,16 @@ Rules:
 }
 
 const ENRICH_SYSTEM_PROMPT = `You are an expert technical writer for an AI tools intelligence library.
-Your readers are business owners and developers who want to act immediately on what they learn.
+Your readers are developers who use AI coding agents (Claude Code, Codex CLI) to set up tools.
 Write for clarity, specificity, and actionability. No fluff.
-Every actionable step should start with an imperative verb and be completable in under 30 minutes.`
+
+CRITICAL: The "ai_actionable_steps" you write will be embedded in prompts that users paste into their AI coding agent.
+These steps must be written FOR AN AI AGENT TO EXECUTE, not for a human to follow manually.
+- Do NOT write steps like "Go to the website and click..." or "Open Google Studio and select..."
+- DO write steps that an AI coding agent can act on: "Clone the repository", "Add this config block to settings.json", "Install the npm package and configure the API client"
+- If the tool requires an API key (OpenAI, Anthropic, Google AI, OpenRouter, etc.), say "Configure the API client using the user's existing provider key from their .env file, or prompt them to add one"
+- Always assume the agent will scan the user's workspace first and adapt to their existing setup
+- Each step should start with an imperative verb and be completable programmatically`
 
 function buildEnrichPrompt(
   item: ReadyItem,
@@ -363,7 +370,7 @@ ${item.raw_content.slice(0, 4000)}
 Generate a complete library entry. Be specific and concrete — no generic advice.
 quality_score: 1-10 (be harsh. 9-10 = life-changing for our readers, 6-8 = genuinely useful, below 6 = not worth publishing)
 ai_summary: 2-3 sentences, plain English for a non-technical business owner
-ai_actionable_steps: exactly 3 steps, each completable today, starting with an imperative verb
+ai_actionable_steps: exactly 3 steps that an AI CODING AGENT (Claude Code, Codex CLI) can execute programmatically. Do NOT write human-only steps like "visit website" or "click button". Write agent-executable steps: "Clone the repo", "Add this config to .env", "Install the package and wire up the API client using the user's existing provider key". If API access is needed, reference checking the user's .env for existing keys (OpenRouter, OpenAI, Anthropic, Google AI) before asking them to add one.
 ai_project_ideas: exactly 2 ideas, specific and buildable
 ai_business_use_cases: exactly 2 real business scenarios
 code_snippet: extracted code block if present, otherwise empty string

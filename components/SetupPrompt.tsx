@@ -12,58 +12,185 @@ interface Item {
   source_type: string
 }
 
+/** Does this category typically require AI provider API access? */
+function needsAIProvider(category: string): boolean {
+  return ['technique', 'workflow'].includes(category)
+}
+
+/** Derive header verb based on category */
+function headerVerb(category: string): string {
+  switch (category) {
+    case 'skill':
+    case 'plugin':
+    case 'hook': return 'Install & Configure'
+    case 'prompt': return 'Set Up'
+    case 'technique': return 'Apply Technique'
+    case 'workflow': return 'Set Up Workflow'
+    default: return 'Set Up'
+  }
+}
+
 function buildPrompt(item: Item): string {
   const lines: string[] = []
+  const isAgentic = ['skill', 'hook', 'plugin', 'prompt'].includes(item.category)
+  const isGitHub = item.source_url?.includes('github.com')
+  const isRepoUrl = isGitHub && !item.source_url.includes('/discussions/') && !item.source_url.includes('/issues/') && !item.source_url.includes('/blob/')
+  const isGitHubFile = isGitHub && item.source_url.includes('/blob/')
+  const wantsProvider = needsAIProvider(item.category)
 
-  // Header
-  lines.push(`# Set up: ${item.title}`)
+  // ── Header ──
+  lines.push(`# ${headerVerb(item.category)}: ${item.title}`)
   lines.push('')
 
-  // Summary (first sentence only)
+  // ── What this is ──
   if (item.ai_summary) {
-    const firstSentence = item.ai_summary.split(/(?<=\.)\s/)[0] || item.ai_summary
-    lines.push(firstSentence)
+    lines.push('## What This Is')
+    lines.push(item.ai_summary)
     lines.push('')
   }
 
-  // Source URL with context
-  const isGitHub = item.source_url?.includes('github.com')
-  const isRepoUrl = isGitHub && !item.source_url.includes('/discussions/') && !item.source_url.includes('/issues/')
-
-  if (isRepoUrl) {
-    lines.push(`Repository: ${item.source_url}`)
-  } else if (item.source_url) {
-    lines.push(`Reference: ${item.source_url}`)
-  }
-  lines.push('')
-
-  // Instructions
-  lines.push('## Instructions')
-  lines.push('')
-
-  const isAgentic = ['skill', 'hook', 'plugin', 'prompt'].includes(item.category)
-
-  if (isRepoUrl) {
-    lines.push('1. Clone or fetch the repository above into the appropriate location for this project.')
+  // ── Source ──
+  if (item.source_url) {
+    lines.push(`Source: ${item.source_url}`)
+    lines.push('')
   }
 
+  // ── Workspace analysis ──
+  lines.push('## Before You Start')
+  lines.push('')
+  lines.push('Scan my workspace and analyze:')
+  lines.push('- The project language, framework, and directory structure')
+
+  if (wantsProvider) {
+    lines.push('- Existing AI provider config (check .env, .env.local, config files for API keys — OpenRouter, OpenAI, Anthropic, Google AI, etc.)')
+  }
+
+  if (isAgentic) {
+    lines.push('- Existing agent configuration (check for .claude/, .codex/, CLAUDE.md, settings.json, commands/, skills/ directories)')
+  }
+
+  if (isRepoUrl) {
+    lines.push('- Whether this repository or a similar tool is already cloned or installed')
+  }
+
+  lines.push('')
+  lines.push('Then ask me before proceeding:')
+
+  // Category-aware questions
+  if (wantsProvider) {
+    lines.push('1. Which AI provider/API should this use? (Use whatever I already have configured, or ask me to set one up — options include direct provider APIs or a unified service like OpenRouter)')
+  }
+
+  const qNum = wantsProvider ? 2 : 1
+  if (item.category === 'hook') {
+    lines.push(`${qNum}. Which lifecycle event should this hook fire on? (PreToolUse, PostToolUse, Notification, etc.)`)
+    lines.push(`${qNum + 1}. Are there any files, patterns, or tools this should be scoped to?`)
+  } else if (item.category === 'plugin') {
+    lines.push(`${qNum}. Do I need to configure any service credentials for this plugin (database, API keys, etc.)?`)
+    lines.push(`${qNum + 1}. Should this be project-scoped or global?`)
+  } else if (item.category === 'skill') {
+    lines.push(`${qNum}. Where should this skill be installed — project-level (.claude/skills/) or globally?`)
+    lines.push(`${qNum + 1}. Any customizations needed (trigger conditions, naming, etc.)?`)
+  } else if (item.category === 'prompt') {
+    lines.push(`${qNum}. Should this be a slash command (.claude/commands/*.md) or added to CLAUDE.md as persistent context?`)
+    lines.push(`${qNum + 1}. Any project-specific values I should customize in the prompt?`)
+  } else {
+    lines.push(`${qNum}. Where in my project should this be integrated?`)
+    lines.push(`${qNum + 1}. Are there any customizations I need (model preferences, naming conventions, constraints)?`)
+  }
+
+  lines.push('')
+
+  // ── Source access instructions ──
+  if (isRepoUrl) {
+    lines.push('## Fetch the Source')
+    lines.push('')
+    lines.push(`Clone or inspect the repository to understand what needs to be installed:`)
+    lines.push('```bash')
+    lines.push(`gh repo clone ${item.source_url.replace('https://github.com/', '')}`)
+    lines.push('```')
+    lines.push('Review the README, directory structure, and any install instructions before proceeding.')
+    lines.push('')
+  } else if (isGitHubFile) {
+    lines.push('## Fetch the Source')
+    lines.push('')
+    lines.push('Fetch the raw file content from GitHub:')
+    lines.push('```bash')
+    const rawUrl = item.source_url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+    lines.push(`curl -sL "${rawUrl}"`)
+    lines.push('```')
+    lines.push('')
+  } else if (item.source_url && !isGitHub) {
+    lines.push('## Source Access Note')
+    lines.push('')
+    lines.push(`The source URL (${item.source_url}) may not be directly accessible from the terminal. Use the Reference Implementation and Additional Context sections below instead. If you need more details, ask me to paste relevant content from the source.`)
+    lines.push('')
+  }
+
+  // ── Implementation instructions (category-aware) ──
+  lines.push('## What to Implement')
+  lines.push('')
+
+  if (item.category === 'skill') {
+    lines.push('This is an **Agent Skill** — an auto-loaded capability defined in a SKILL.md file.')
+    lines.push('')
+    lines.push('- Read the source repository/file to find the skill definition (SKILL.md or equivalent)')
+    lines.push('- Place it in the correct skills directory for my agent setup (`.claude/skills/`, or equivalent)')
+    lines.push('- Ensure the SKILL.md frontmatter is valid and the skill is discoverable')
+    lines.push('- If the skill requires any dependencies, install them using the project\'s package manager')
+  } else if (item.category === 'hook') {
+    lines.push('This is an **Agent Hook** — a shell/HTTP command that fires at lifecycle events.')
+    lines.push('')
+    lines.push('- Add the hook configuration to `.claude/settings.json` under the lifecycle event I specified')
+    lines.push('- If the hook needs a shell script, create it and make it executable (`chmod +x`)')
+    lines.push('- If the hook calls an external API, configure it using credentials from my .env files')
+    lines.push('- Validate the JSON config is syntactically correct before saving')
+  } else if (item.category === 'plugin') {
+    lines.push('This is an **Agent Plugin** — typically an MCP server or capability bundle.')
+    lines.push('')
+    lines.push('- Install any required npm/pip packages from the source repository')
+    lines.push('- Register the MCP server in `.claude/settings.json` under the `mcpServers` key with the correct command and args')
+    lines.push('- Configure any required environment variables or credentials')
+    lines.push('- Verify the server starts correctly by checking its expected output')
+  } else if (item.category === 'prompt') {
+    lines.push('This is a **Command Template** — a reusable slash command or system prompt.')
+    lines.push('')
+    lines.push('- Create the command file based on my answer above (either `.claude/commands/[name].md` or add to `CLAUDE.md`)')
+    lines.push('- Adapt any placeholder values to my project specifics')
+    lines.push('- If the command references specific tools or APIs, wire it to what I already have configured')
+  } else if (item.category === 'technique') {
+    lines.push('This is an **AI Technique** — a pattern or methodology for working with AI models.')
+    lines.push('')
+    lines.push('- Explain how this technique applies to my current project and what benefit it provides')
+    lines.push('- Implement it in a way that fits my existing codebase — suggest concrete files to modify or create')
+    lines.push('- If it requires specific model capabilities (structured output, function calling, etc.), verify my current provider supports them')
+    lines.push('- Show me a working example I can test immediately')
+  } else if (item.category === 'workflow') {
+    lines.push('This is an **AI Workflow** — an end-to-end automation pattern or integration pipeline.')
+    lines.push('')
+    lines.push('- Study the workflow architecture from the source and context below')
+    lines.push('- Identify which parts I can implement locally vs. parts that need external services')
+    lines.push('- For local parts: implement them using my existing stack and API keys')
+    lines.push('- For external parts: tell me exactly what services I need and help me configure the integration code')
+    lines.push('- Wire up any required API calls using keys from my .env files')
+  }
+
+  lines.push('')
+
+  // ── Context from enrichment steps (as background for the agent) ──
   const steps = item.ai_actionable_steps || []
-  const startNum = isRepoUrl ? 2 : 1
-  steps.forEach((step, i) => {
-    lines.push(`${startNum + i}. ${step}`)
-  })
+  if (steps.length > 0) {
+    lines.push('## Additional Context')
+    lines.push('')
+    steps.forEach(step => {
+      lines.push(`- ${step}`)
+    })
+    lines.push('')
+  }
 
-  lines.push('')
-
-  // Configuration / code snippet
+  // ── Code / config reference ──
   if (item.code_snippet) {
-    if (item.category === 'prompt' || item.category === 'hook') {
-      lines.push('## Configuration to apply:')
-    } else if (item.category === 'skill' || item.category === 'plugin') {
-      lines.push('## Code to install:')
-    } else {
-      lines.push('## Code reference:')
-    }
+    lines.push('## Reference Implementation')
     lines.push('')
     lines.push('```')
     lines.push(item.code_snippet)
@@ -71,23 +198,18 @@ function buildPrompt(item: Item): string {
     lines.push('')
   }
 
-  // Placement context for agentic items
-  if (isAgentic) {
-    lines.push('## Important')
-    lines.push('')
-    if (item.category === 'skill') {
-      lines.push('Place skill files in the `.claude/skills/` or equivalent directory. Ensure the SKILL.md file is properly formatted.')
-    } else if (item.category === 'hook') {
-      lines.push('Add hook configuration to `.claude/settings.json` under the appropriate lifecycle event (PreToolUse, PostToolUse, etc.).')
-    } else if (item.category === 'plugin') {
-      lines.push('Install the plugin using `/plugin install` or manually place the bundle in the `.claude/plugins/` directory.')
-    } else if (item.category === 'prompt') {
-      lines.push('Save this as a slash command in `.claude/commands/` as a .md file, or add it to your CLAUDE.md for persistent context.')
-    }
-    lines.push('')
+  // ── Guidelines for the agent ──
+  lines.push('## Guidelines')
+  lines.push('')
+  lines.push('- Adapt everything to my existing project — do not assume a specific stack or directory layout')
+
+  if (wantsProvider) {
+    lines.push('- Use whichever AI provider I already have configured; if I need a new one, tell me what to sign up for and I\'ll give you the key')
+    lines.push('- Check my .env files for existing API keys (OpenRouter, OpenAI, Anthropic, Google AI) before asking me to add one')
   }
 
-  lines.push('Verify everything works after setup and report back with a summary of what was installed.')
+  lines.push('- Review any fetched code for safety before installing or executing it')
+  lines.push('- After setup, run a quick verification and show me a summary of exactly what was installed, where, and how to use it')
 
   return lines.join('\n')
 }
@@ -142,23 +264,24 @@ export default function SetupPrompt({ item }: { item: Item }) {
               gap: 8,
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
             AI SETUP PROMPT
           </h2>
           <p className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', margin: 0 }}>
-            Paste into {toolTarget} to set up automatically
+            Paste into {toolTarget} — it will scan your project and ask how to proceed
           </p>
         </div>
 
         <button
           onClick={copy}
+          aria-label={copied ? 'Prompt copied to clipboard' : 'Copy setup prompt to clipboard'}
           className="font-mono"
           style={{
             fontSize: 12,
             fontWeight: 600,
-            padding: '8px 20px',
+            padding: '10px 20px',
             borderRadius: 8,
             border: copied ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(6,182,212,0.35)',
             background: copied ? 'rgba(16,185,129,0.15)' : 'rgba(6,182,212,0.12)',
@@ -168,20 +291,20 @@ export default function SetupPrompt({ item }: { item: Item }) {
             alignItems: 'center',
             gap: 8,
             transition: 'all 0.2s ease',
-            minHeight: 38,
+            minHeight: 44,
             whiteSpace: 'nowrap',
           }}
         >
           {copied ? (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
               Copied!
             </>
           ) : (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
               </svg>
