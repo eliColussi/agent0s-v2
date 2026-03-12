@@ -174,12 +174,27 @@ export default async function AgenticPage({ searchParams }: PageProps) {
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <div className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 8 }}>
+          <div className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 12 }}>
             NO RESULTS
           </div>
-          <p style={{ fontSize: 15, color: 'var(--text-dim)' }}>
-            No agentic tools found for this filter. New items are discovered daily at 7am PST.
+          <p style={{ fontSize: 15, color: 'var(--text-dim)', marginBottom: 20 }}>
+            No agentic tools found for this filter combination. New items are discovered daily at 7am PST.
           </p>
+          <Link
+            href="/agentic"
+            className="font-mono"
+            style={{
+              padding: '8px 20px',
+              borderRadius: 8,
+              fontSize: 13,
+              letterSpacing: '0.04em',
+              textDecoration: 'none',
+              color: '#0e1520',
+              background: 'var(--accent)',
+            }}
+          >
+            Clear all filters
+          </Link>
         </div>
       )}
     </div>

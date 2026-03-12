@@ -45,6 +45,7 @@ export default async function ItemDetailPage({ params }: Props) {
   const toolLabel =
     item.tool === 'claude-code' ? 'Claude Code'
     : item.tool === 'chatgpt-codex' ? 'ChatGPT/Codex'
+    : item.tool === 'openclaw' ? 'OpenCLAW'
     : 'General AI'
 
   return (
@@ -333,24 +334,46 @@ export default async function ItemDetailPage({ params }: Props) {
 
         {/* Tags */}
         {item.tags?.length ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {item.tags.map(tag => (
-              <span
-                key={tag}
-                className="font-mono"
-                style={{
-                  fontSize: 11,
-                  letterSpacing: '0.04em',
-                  padding: '3px 9px',
-                  borderRadius: 5,
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-dim)',
-                }}
-              >
-                #{tag}
-              </span>
-            ))}
+          <div>
+            <h2
+              className="font-mono"
+              style={{
+                fontSize: 11,
+                letterSpacing: '0.10em',
+                color: 'var(--text-muted)',
+                marginBottom: 12,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              TAGS
+            </h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {item.tags.map(tag => (
+                <Link
+                  key={tag}
+                  href={`/library?search=${encodeURIComponent(tag)}`}
+                  className="font-mono"
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: '0.04em',
+                    padding: '3px 9px',
+                    borderRadius: 5,
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-dim)',
+                    textDecoration: 'none',
+                    transition: 'border-color 0.15s, color 0.15s',
+                  }}
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </div>
           </div>
         ) : null}
 

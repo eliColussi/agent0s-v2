@@ -8,9 +8,6 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/library', label: 'Library' },
   { href: '/agentic', label: 'Agentic' },
-  { href: '/library?category=technique', label: 'Techniques' },
-  { href: '/library?category=workflow', label: 'Workflows' },
-  { href: '/library?category=niche-use-case', label: 'Niche Uses' },
 ]
 
 export default function Nav() {
@@ -103,12 +100,10 @@ export default function Nav() {
 
         {/* Right side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          {/* Learn AI CTA */}
-          <a
-            href="https://www.skool.com/ai-staffroom/about"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-syne"
+          {/* Browse Library CTA */}
+          <Link
+            href="/library"
+            className="font-syne hidden sm:inline-flex"
             style={{
               padding: '7px 18px',
               borderRadius: 8,
@@ -122,6 +117,8 @@ export default function Nav() {
               transition: 'transform 0.15s ease, box-shadow 0.15s ease',
               whiteSpace: 'nowrap',
               cursor: 'pointer',
+              alignItems: 'center',
+              gap: 6,
             }}
             onMouseEnter={e => {
               e.currentTarget.style.transform = 'translateY(-1px)'
@@ -132,8 +129,8 @@ export default function Nav() {
               e.currentTarget.style.boxShadow = '0 0 16px rgba(232, 184, 75, 0.3), 0 1px 2px rgba(0,0,0,0.2)'
             }}
           >
-            Learn AI
-          </a>
+            Browse Library
+          </Link>
 
           {/* Live status */}
           <div
@@ -232,10 +229,8 @@ export default function Nav() {
               </Link>
             )
           })}
-          <a
-            href="https://www.skool.com/ai-staffroom/about"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/library"
             className="font-syne"
             onClick={() => setMobileOpen(false)}
             style={{
@@ -251,7 +246,26 @@ export default function Nav() {
               boxShadow: '0 0 16px rgba(232, 184, 75, 0.3)',
             }}
           >
-            Learn AI
+            Browse Library
+          </Link>
+          <a
+            href="https://www.skool.com/ai-staffroom/about"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono"
+            onClick={() => setMobileOpen(false)}
+            style={{
+              padding: '9px 16px',
+              borderRadius: 8,
+              fontSize: 13,
+              textDecoration: 'none',
+              textAlign: 'center',
+              color: 'var(--text-muted)',
+              border: '1px solid var(--border)',
+              marginTop: 4,
+            }}
+          >
+            Learn AI →
           </a>
         </div>
       )}

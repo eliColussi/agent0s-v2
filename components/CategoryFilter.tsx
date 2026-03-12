@@ -47,6 +47,26 @@ export default function CategoryFilter() {
     router.push(`${pathname}?${params.toString()}`)
   }
 
+  const hasActiveFilters = activeCategory !== 'all' || activeDifficulty !== 'all' || activeTool !== 'all'
+
+  const activeChips: { label: string; key: string }[] = []
+  if (activeCategory !== 'all') {
+    const cat = categories.find(c => c.value === activeCategory)
+    if (cat) activeChips.push({ label: cat.label, key: 'category' })
+  }
+  if (activeDifficulty !== 'all') {
+    const diff = difficulties.find(d => d.value === activeDifficulty)
+    if (diff) activeChips.push({ label: diff.label, key: 'difficulty' })
+  }
+  if (activeTool !== 'all') {
+    const t = tools.find(t => t.value === activeTool)
+    if (t) activeChips.push({ label: t.label, key: 'tool' })
+  }
+
+  function clearAll() {
+    router.push(pathname)
+  }
+
   const selectStyle = {
     height: 36,
     paddingLeft: 10,
@@ -60,6 +80,51 @@ export default function CategoryFilter() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Active filter chips */}
+      {hasActiveFilters && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+          {activeChips.map(chip => (
+            <button
+              key={chip.key}
+              onClick={() => setParam(chip.key, 'all')}
+              className="font-mono"
+              style={{
+                padding: '3px 8px',
+                borderRadius: 5,
+                fontSize: 11,
+                letterSpacing: '0.04em',
+                cursor: 'pointer',
+                border: '1px solid var(--accent)',
+                background: 'rgba(232,184,75,0.1)',
+                color: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              {chip.label}
+              <span style={{ fontSize: 13, lineHeight: 1 }}>×</span>
+            </button>
+          ))}
+          <button
+            onClick={clearAll}
+            className="font-mono"
+            style={{
+              padding: '3px 8px',
+              borderRadius: 5,
+              fontSize: 11,
+              letterSpacing: '0.04em',
+              cursor: 'pointer',
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-dim)',
+            }}
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
       {/* Row 1: Category pills */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
         {categories.map(cat => {

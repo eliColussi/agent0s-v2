@@ -93,10 +93,35 @@ export default async function HomePage() {
         </div>
       </div>
 
+      {/* Value proposition */}
+      <div style={{ marginBottom: 36 }}>
+        <h1
+          className="font-syne"
+          style={{
+            fontWeight: 800,
+            fontSize: 'clamp(22px, 3vw, 32px)',
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.02em',
+            marginBottom: 8,
+          }}
+        >
+          Discover & master the latest AI coding tools
+        </h1>
+        <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-muted)', maxWidth: 600 }}>
+          Daily curated skills, hooks, techniques, and workflows for{' '}
+          <span style={{ color: 'var(--accent)' }}>Claude Code</span>,{' '}
+          <span style={{ color: 'var(--accent)' }}>Codex CLI</span>, and{' '}
+          <span style={{ color: 'var(--accent)' }}>OpenCLAW</span>.
+        </p>
+      </div>
+
       {/* Daily Digest hero */}
       <section style={{ marginBottom: 56 }}>
         <DailyDigest digest={displayDigest} featuredItems={featuredItems} />
       </section>
+
+      {/* Section divider */}
+      <div style={{ height: 1, background: 'var(--border)', margin: '0 0 48px', opacity: 0.6 }} />
 
       {/* Recently Added */}
       <section style={{ marginBottom: 56 }}>
@@ -162,6 +187,9 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* Section divider */}
+      <div style={{ height: 1, background: 'var(--border)', margin: '0 0 48px', opacity: 0.6 }} />
 
       {/* Browse by Category */}
       <section>

@@ -59,7 +59,7 @@ export default function SearchBar() {
       <input
         type="text"
         className="search-input font-mono"
-        placeholder="Search tools, prompts, skills..."
+        placeholder="Search by title, tags, or summary..."
         value={value}
         onChange={handleChange}
         onFocus={() => setFocused(true)}
@@ -68,7 +68,7 @@ export default function SearchBar() {
           width: '100%',
           height: 40,
           paddingLeft: 36,
-          paddingRight: 48,
+          paddingRight: 14,
           fontSize: 14,
           background: 'var(--surface)',
           border: '1px solid var(--border)',
@@ -78,27 +78,6 @@ export default function SearchBar() {
           transition: 'border-color 0.2s',
         }}
       />
-
-      {/* Keyboard shortcut badge */}
-      <span
-        className="font-mono"
-        style={{
-          position: 'absolute',
-          right: 10,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          fontSize: 11,
-          color: 'var(--text-dim)',
-          background: 'var(--surface-raised)',
-          border: '1px solid var(--border)',
-          borderRadius: 4,
-          padding: '1px 5px',
-          letterSpacing: '0.04em',
-          pointerEvents: 'none',
-        }}
-      >
-        ⌘K
-      </span>
     </div>
   )
 }
