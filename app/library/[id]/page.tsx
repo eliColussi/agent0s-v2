@@ -1,5 +1,6 @@
 import { getItemById } from '@/lib/queries'
 import CodeBlock from '@/components/CodeBlock'
+import SetupPrompt from '@/components/SetupPrompt'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getSeedItemById } from '@/lib/seed-data'
@@ -46,7 +47,7 @@ export default async function ItemDetailPage({ params }: Props) {
     : 'General AI'
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 24px 80px' }}>
+    <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px 80px' }}>
       {/* Breadcrumb */}
       <div
         className="font-mono"
@@ -150,34 +151,50 @@ export default async function ItemDetailPage({ params }: Props) {
       {/* Content sections */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* 1. Mission Objectives */}
+        {/* 1. AI Setup Prompt */}
+        <SetupPrompt item={{
+          title: item.title,
+          category: item.category,
+          tool: item.tool,
+          ai_summary: item.ai_summary,
+          ai_actionable_steps: item.ai_actionable_steps,
+          code_snippet: item.code_snippet,
+          source_url: item.source_url,
+          source_type: item.source_type,
+        }} />
+
+        {/* Manual steps (collapsible) */}
         {item.ai_actionable_steps?.length ? (
-          <section
+          <details
             style={{
               background: 'var(--surface)',
               border: '1px solid var(--border)',
               borderRadius: 12,
-              padding: '20px 22px',
             }}
           >
-            <h2
+            <summary
               className="font-mono"
               style={{
                 fontSize: 11,
                 letterSpacing: '0.10em',
-                color: 'var(--accent)',
-                marginBottom: 16,
+                color: 'var(--text-muted)',
+                padding: '14px 22px',
+                cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
+                listStyle: 'none',
               }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              MISSION OBJECTIVES
-            </h2>
-            <ol style={{ display: 'flex', flexDirection: 'column', gap: 12, listStyle: 'none', padding: 0 }}>
+              MANUAL SETUP STEPS
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: 'auto' }}>
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </summary>
+            <ol style={{ display: 'flex', flexDirection: 'column', gap: 12, listStyle: 'none', padding: '0 22px 20px' }}>
               {item.ai_actionable_steps.map((step, i) => (
                 <li key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   <span
@@ -203,7 +220,7 @@ export default async function ItemDetailPage({ params }: Props) {
                 </li>
               ))}
             </ol>
-          </section>
+          </details>
         ) : null}
 
         {/* 2. Code Intelligence */}

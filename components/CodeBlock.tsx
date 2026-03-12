@@ -16,20 +16,52 @@ export default function CodeBlock({ code, language = 'bash' }: Props) {
   }
 
   return (
-    <div className="relative group rounded-xl border border-violet-500/10 overflow-hidden">
+    <div
+      style={{
+        borderRadius: 12,
+        border: '1px solid rgba(255,255,255,0.08)',
+        overflow: 'hidden',
+        background: '#070a12',
+      }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#0d0d15] border-b border-white/5">
-        <span className="text-xs text-white/30 font-mono">{language}</span>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 16px',
+          background: '#0a0e18',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <span className="font-mono" style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>
+          {language}
+        </span>
         <button
           onClick={copy}
-          className="text-xs text-white/30 hover:text-white/70 transition-colors flex items-center gap-1.5"
+          className="font-mono"
+          style={{
+            fontSize: 11,
+            padding: '4px 12px',
+            borderRadius: 6,
+            border: copied ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(6,182,212,0.25)',
+            background: copied ? 'rgba(16,185,129,0.12)' : 'rgba(6,182,212,0.1)',
+            color: copied ? '#6ee7b7' : '#67e8f9',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            transition: 'all 0.15s ease',
+            minHeight: 28,
+          }}
         >
           {copied ? (
             <>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
-              Copied
+              Copied!
             </>
           ) : (
             <>
@@ -43,7 +75,20 @@ export default function CodeBlock({ code, language = 'bash' }: Props) {
         </button>
       </div>
       {/* Code */}
-      <pre className="p-4 text-xs text-green-300/90 font-mono leading-relaxed overflow-x-auto !border-0 !rounded-none">
+      <pre
+        style={{
+          margin: 0,
+          padding: '16px 20px',
+          fontSize: 13,
+          lineHeight: '22px',
+          color: '#6ee7b7',
+          fontFamily: 'var(--font-mono), monospace',
+          overflowX: 'auto',
+          background: 'transparent',
+          border: 'none',
+          borderRadius: 0,
+        }}
+      >
         <code>{code}</code>
       </pre>
     </div>

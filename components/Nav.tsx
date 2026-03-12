@@ -102,6 +102,38 @@ export default function Nav() {
 
         {/* Right side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          {/* Learn AI CTA */}
+          <a
+            href="https://www.skool.com/ai-staffroom/about"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-syne"
+            style={{
+              padding: '7px 18px',
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.02em',
+              textDecoration: 'none',
+              color: '#06080f',
+              background: 'var(--accent)',
+              boxShadow: '0 0 16px rgba(232, 184, 75, 0.3), 0 1px 2px rgba(0,0,0,0.2)',
+              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+              whiteSpace: 'nowrap',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 0 24px rgba(232, 184, 75, 0.5), 0 2px 8px rgba(0,0,0,0.3)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 0 16px rgba(232, 184, 75, 0.3), 0 1px 2px rgba(0,0,0,0.2)'
+            }}
+          >
+            Learn AI
+          </a>
+
           {/* Live status */}
           <div
             className="hidden sm:flex font-mono"
@@ -199,6 +231,27 @@ export default function Nav() {
               </Link>
             )
           })}
+          <a
+            href="https://www.skool.com/ai-staffroom/about"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-syne"
+            onClick={() => setMobileOpen(false)}
+            style={{
+              padding: '11px 16px',
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: 'none',
+              textAlign: 'center',
+              color: '#06080f',
+              background: 'var(--accent)',
+              marginTop: 8,
+              boxShadow: '0 0 16px rgba(232, 184, 75, 0.3)',
+            }}
+          >
+            Learn AI
+          </a>
         </div>
       )}
     </nav>
