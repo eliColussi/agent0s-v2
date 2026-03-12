@@ -102,7 +102,7 @@ export async function runScrapeAndProcess() {
     // ── Pre-load existing data for deduplication ──────────────────────────────
     const [existingUrlsRes, existingTitlesRes] = await Promise.all([
       db.from('library_items').select('source_url'),
-      db.from('library_items').select('id, title').order('created_at', { ascending: false }).limit(300),
+      db.from('library_items').select('id, title').order('created_at', { ascending: false }),
     ])
 
     const existingUrls = new Set(
@@ -185,7 +185,8 @@ export async function runScrapeAndProcess() {
       if (!result) { runLog.items_rejected++; continue }
       const { item, enriched: e } = result
 
-      if (!e.quality_score || e.quality_score < 6) {
+      const qualityScore = Math.round(e.quality_score ?? 0)
+      if (qualityScore < 7) {
         runLog.items_rejected++
         continue
       }
@@ -202,22 +203,22 @@ export async function runScrapeAndProcess() {
       }
 
       const { error } = await db.from('library_items').insert({
-        title: e.title,
+        title: String(e.title || '').slice(0, 255),
         raw_content: item.raw_content.slice(0, 8000),
         source_url: item.source_url,
         source_type: item.source_type,
         category: e.category,
         tool: e.tool,
         difficulty: e.difficulty,
-        quality_score: e.quality_score,
-        ai_summary: e.ai_summary,
-        ai_actionable_steps: e.ai_actionable_steps,
-        ai_project_ideas: e.ai_project_ideas,
-        ai_business_use_cases: e.ai_business_use_cases,
+        quality_score: qualityScore,
+        ai_summary: String(e.ai_summary || ''),
+        ai_actionable_steps: Array.isArray(e.ai_actionable_steps) ? e.ai_actionable_steps : [],
+        ai_project_ideas: Array.isArray(e.ai_project_ideas) ? e.ai_project_ideas : [],
+        ai_business_use_cases: Array.isArray(e.ai_business_use_cases) ? e.ai_business_use_cases : [],
         code_snippet: e.code_snippet || null,
-        tags: e.tags,
+        tags: Array.isArray(e.tags) ? e.tags : [],
         version_label: e.version_label || null,
-        is_version_update: e.is_version_update,
+        is_version_update: Boolean(e.is_version_update),
         supersedes_id,
         github_stars: item.github_stars,
       })

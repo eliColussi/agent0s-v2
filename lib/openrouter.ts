@@ -15,17 +15,22 @@ export const MODELS = {
   discovery: 'perplexity/sonar-pro',
 
   // Stage 2: Triage — fast parallel scoring (~50-80 calls/day)
-  triage:          'google/gemini-2.5-flash-preview',
-  triage_fallback: 'anthropic/claude-haiku-4-5-20251001',
+  triage:          'google/gemini-2.5-flash',
+  triage_fallback: 'anthropic/claude-haiku-4.5',
 
   // Stage 4: Enrichment — quality layer users actually read
-  enrich:          'anthropic/claude-sonnet-4-6',
+  enrich:          'anthropic/claude-sonnet-4.6',
   enrich_fallback: 'google/gemini-2.5-pro',
 
   // Stage 5: Daily digest — one call/day, premium writing quality
-  digest:          'anthropic/claude-opus-4-6',
-  digest_fallback: 'anthropic/claude-sonnet-4-6',
+  digest:          'anthropic/claude-opus-4.6',
+  digest_fallback: 'anthropic/claude-sonnet-4.6',
 } as const
+
+// Strip markdown code fences some models wrap JSON responses in
+function stripFences(s: string): string {
+  return s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim()
+}
 
 // ─── Shared headers ───────────────────────────────────────────────────────────
 const getHeaders = () => ({
@@ -66,7 +71,7 @@ export async function callJSON<T = Record<string, unknown>>(
   const content = data.choices?.[0]?.message?.content
   if (!content) throw new Error(`Empty response from ${data.model ?? model}`)
 
-  return JSON.parse(content) as T
+  return JSON.parse(stripFences(content)) as T
 }
 
 // ─── json_schema call — used for enrichment (Sonnet + Gemini 2.5 Pro) ────────
@@ -110,7 +115,7 @@ export async function callSchema<T>(options: JsonSchemaOptions<T>): Promise<T> {
   const content = data.choices?.[0]?.message?.content
   if (!content) throw new Error(`Empty response from ${data.model ?? model}`)
 
-  return JSON.parse(content) as T
+  return JSON.parse(stripFences(content)) as T
 }
 
 // ─── Perplexity Sonar — live web search with cited source URLs ─────────────
@@ -132,9 +137,18 @@ export async function callSonar(query: string): Promise<SonarResult> {
   if (!res.ok) throw new Error(`Sonar ${res.status}: ${await res.text()}`)
 
   const data = await res.json()
+
+  // OpenRouter surfaces Perplexity citations as annotations on the message,
+  // not as a top-level data.citations field.
+  const annotations: { type: string; url_citation?: { url: string } }[] =
+    data.choices?.[0]?.message?.annotations ?? []
+  const citations = annotations
+    .filter(a => a.type === 'url_citation' && a.url_citation?.url)
+    .map(a => a.url_citation!.url)
+
   return {
     answer: data.choices?.[0]?.message?.content ?? '',
-    citations: (data.citations ?? []) as string[],
+    citations,
   }
 }
 
