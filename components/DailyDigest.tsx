@@ -1,5 +1,3 @@
-'use client'
-import { motion } from 'framer-motion'
 import { DailyDigest as DigestType, LibraryItem } from '@/types'
 import { SEED_STATS } from '@/lib/seed-data'
 
@@ -29,10 +27,8 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
     'The daily scraper runs at 7am PST. Once configured, new AI tools, prompts, and techniques will appear here automatically every morning.'
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
+    <div
+      className="card-enter"
       style={{
         borderRadius: 16,
         background: 'var(--surface)',
@@ -170,11 +166,9 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
             }}
           >
             {featuredItems.slice(0, 4).map((item, i) => (
-              <motion.div
+              <div
                 key={item.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 + i * 0.06 }}
+                className="card-enter"
                 style={{
                   background: 'var(--surface-raised)',
                   border: '1px solid var(--border)',
@@ -182,6 +176,7 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
                   padding: '10px 12px',
                   borderLeft: `3px solid var(--cat-${item.category})`,
                   overflow: 'hidden',
+                  animationDelay: `${100 + i * 60}ms`,
                 }}
               >
                 <div
@@ -204,11 +199,11 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
                 >
                   {item.title}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   )
 }

@@ -2,14 +2,14 @@
  * Stage 1: Discovery — Perplexity Sonar Pro
  *
  * Tiered query architecture:
- *   Tier 1 (Anchors, 8 queries) — run every day. Catches breaking releases,
+ *   Tier 1 (Anchors, 5 queries) — run every day. Catches breaking releases,
  *   changelogs, and high-signal content the moment it drops.
  *
- *   Tier 2 (Rotating pool, 42 queries) — 7 selected per day on a 6-day cycle.
+ *   Tier 2 (Rotating pool, 42 queries) — 5 selected per day on an 8-day cycle.
  *   Covers deep domain knowledge: business AI, local models, integrations,
  *   niche Claude Code techniques, open-source ecosystem, industry use cases.
  *
- * Total per run: 15 queries (same Sonar budget as before, far more varied output).
+ * Total per run: 10 queries (~$1.50/day budget target).
  */
 
 import { callSonar } from '../openrouter'
@@ -28,22 +28,16 @@ export interface DiscoveryResult {
 // Focused on real releases and substantive technical content — no hype.
 
 const ANCHOR_QUERIES = [
-  // Anthropic / Claude Code releases — literal changelog tracking
-  'Claude Code release update changelog new feature site:github.com/anthropics OR site:anthropic.com 2026',
-  // Claude.ai and Claude API new capabilities
-  'Anthropic Claude new model API feature release developer 2026',
-  // Claude Code community repos — repos that shipped in the last few days
-  'Claude Code hooks CLAUDE.md new github repository released this week',
-  // AI coding tools — Cursor, Windsurf, Codex real updates
-  'Cursor Windsurf AI coding tool release changelog update 2026',
+  // Anthropic / Claude Code releases + community repos
+  'Claude Code Anthropic release update changelog new feature hooks CLAUDE.md github repository 2026',
+  // AI coding tools — Cursor, Windsurf, Codex + agentic frameworks
+  'AI coding tool agent framework Cursor Windsurf release changelog github stars 2026',
   // High-signal developer community: real workflows, not hot-takes
-  'Claude Code advanced workflow site:news.ycombinator.com OR site:lobste.rs 2026',
-  // Agentic frameworks with real GitHub traction
-  'AI agent framework library new release github stars 2026',
-  // Local AI — new models and runtimes that dropped overnight
-  'Ollama new model LM Studio local LLM release 2026',
+  'Claude Code AI coding advanced workflow site:news.ycombinator.com OR site:lobste.rs 2026',
+  // Local AI — new models and runtimes
+  'Ollama local LLM new model runtime release open source 2026',
   // OpenAI/Gemini developer releases (competitive context our readers need)
-  'OpenAI Gemini developer API new feature release this week 2026',
+  'OpenAI Gemini developer API new feature model release 2026',
 ]
 
 // ─── Tier 2: Rotating Pool ─────────────────────────────────────────────────
@@ -125,7 +119,7 @@ function getTodaysQueries(): string[] {
     (Date.now() - Date.UTC(new Date().getUTCFullYear(), 0, 0)) / 86_400_000
   )
   const poolSize = ROTATING_QUERIES.length // 42
-  const perDay = 7
+  const perDay = 5
   const offset = (dayOfYear * perDay) % poolSize
 
   // Wrap around the pool so we never go out of bounds
@@ -148,7 +142,7 @@ export async function runDiscovery(): Promise<DiscoveryResult[]> {
   const results: DiscoveryResult[] = []
   const seenUrls = new Set<string>()
 
-  console.log(`  Discovery: ${ANCHOR_QUERIES.length} anchors + 7 rotating (day offset ${Math.floor((Date.now() - Date.UTC(new Date().getUTCFullYear(), 0, 0)) / 86_400_000) % 6} of 6-day cycle)`)
+  console.log(`  Discovery: ${ANCHOR_QUERIES.length} anchors + 5 rotating (day offset ${Math.floor((Date.now() - Date.UTC(new Date().getUTCFullYear(), 0, 0)) / 86_400_000) % 9} of 8-day cycle)`)
 
   // Run in batches of 5 to respect Sonar rate limits
   for (let i = 0; i < queries.length; i += 5) {

@@ -19,12 +19,12 @@ export const MODELS = {
   triage_fallback: 'anthropic/claude-haiku-4.5',
 
   // Stage 4: Enrichment — quality layer users actually read
-  enrich:          'anthropic/claude-sonnet-4.6',
-  enrich_fallback: 'google/gemini-2.5-pro',
+  enrich:          'google/gemini-2.5-pro',
+  enrich_fallback: 'anthropic/claude-sonnet-4.6',
 
-  // Stage 5: Daily digest — one call/day, premium writing quality
-  digest:          'anthropic/claude-opus-4.6',
-  digest_fallback: 'anthropic/claude-sonnet-4.6',
+  // Stage 5: Daily digest — one call/day
+  digest:          'anthropic/claude-sonnet-4.6',
+  digest_fallback: 'google/gemini-2.5-pro',
 } as const
 
 // Strip markdown code fences some models wrap JSON responses in
