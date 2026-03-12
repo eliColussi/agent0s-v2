@@ -28,12 +28,12 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
 
   return (
     <div
-      className="card-enter"
+      className="card-enter shimmer-border-left"
       style={{
         borderRadius: 16,
         background: 'var(--surface)',
         border: '1px solid var(--border)',
-        borderLeft: '4px solid var(--accent)',
+        borderLeft: '4px solid transparent',
         padding: '32px 32px 32px 28px',
         marginBottom: 0,
         overflow: 'hidden',
@@ -87,9 +87,10 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
           <h1
             className="font-syne"
             style={{
-              fontWeight: 800,
-              fontSize: 'clamp(22px, 4vw, 40px)',
-              lineHeight: 1.15,
+              fontWeight: 700,
+              fontSize: 'clamp(22px, 3.5vw, 36px)',
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em',
               color: 'var(--text-primary)',
               marginBottom: 16,
             }}

@@ -1,7 +1,7 @@
 export type Category = 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow'
 export type Tool = 'claude-code' | 'chatgpt-codex' | 'general'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
-export type SourceType = 'github' | 'reddit'
+export type SourceType = 'github' | 'web' | 'reddit'
 
 export interface LibraryItem {
   id: string

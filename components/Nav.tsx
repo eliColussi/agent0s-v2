@@ -7,10 +7,9 @@ import ThemeToggle from './ThemeToggle'
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/library', label: 'Library' },
-  { href: '/prompts', label: 'Prompts' },
-  { href: '/skills', label: 'Skills' },
-  { href: '/hooks', label: 'Hooks' },
-  { href: '/plugins', label: 'Plugins' },
+  { href: '/agentic', label: 'Agentic' },
+  { href: '/library?category=technique', label: 'Techniques' },
+  { href: '/library?category=workflow', label: 'Workflows' },
 ]
 
 export default function Nav() {

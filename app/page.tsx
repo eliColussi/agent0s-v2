@@ -8,12 +8,12 @@ import { SEED_ITEMS, SEED_DIGEST, SEED_STATS } from '@/lib/seed-data'
 export const revalidate = 3600
 
 const categoryMeta = [
-  { value: 'prompt',    label: 'Prompts',    color: 'var(--cat-prompt)' },
-  { value: 'skill',     label: 'Skills',     color: 'var(--cat-skill)' },
-  { value: 'hook',      label: 'Hooks',      color: 'var(--cat-hook)' },
-  { value: 'plugin',    label: 'Plugins',    color: 'var(--cat-plugin)' },
-  { value: 'technique', label: 'Techniques', color: 'var(--cat-technique)' },
-  { value: 'workflow',  label: 'Workflows',  color: 'var(--cat-workflow)' },
+  { value: 'agentic',   label: 'Agentic',    color: 'var(--cat-prompt)',    href: '/agentic' },
+  { value: 'skill',     label: 'Skills',      color: 'var(--cat-skill)',     href: '/agentic?sub=skill' },
+  { value: 'hook',      label: 'Hooks',       color: 'var(--cat-hook)',      href: '/agentic?sub=hook' },
+  { value: 'technique', label: 'Techniques',  color: 'var(--cat-technique)', href: '/library?category=technique' },
+  { value: 'workflow',  label: 'Workflows',   color: 'var(--cat-workflow)',  href: '/library?category=workflow' },
+  { value: 'plugin',    label: 'Plugins',     color: 'var(--cat-plugin)',    href: '/agentic?sub=plugin' },
 ]
 
 export default async function HomePage() {

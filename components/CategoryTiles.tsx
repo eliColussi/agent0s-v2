@@ -5,13 +5,14 @@ interface CategoryTile {
   label: string
   color: string
   count: number
+  href?: string
 }
 
 export default function CategoryTiles({ tiles }: { tiles: CategoryTile[] }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       {tiles.map(cat => (
-        <Link key={cat.value} href={`/library?category=${cat.value}`} style={{ textDecoration: 'none' }}>
+        <Link key={cat.value} href={cat.href || `/library?category=${cat.value}`} style={{ textDecoration: 'none' }}>
           <div
             className="category-tile"
             style={{

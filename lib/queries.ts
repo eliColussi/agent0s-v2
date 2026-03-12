@@ -78,6 +78,33 @@ export async function getRecentItems(limit = 12) {
   return (data as LibraryItem[]) || []
 }
 
+const AGENTIC_CATEGORIES = ['skill', 'hook', 'prompt', 'plugin']
+
+export async function getAgenticItems(filters: {
+  subcategory?: string
+  tool?: string
+  page?: number
+  limit?: number
+} = {}) {
+  const { subcategory, tool, page = 1, limit = 16 } = filters
+  const offset = (page - 1) * limit
+
+  let query = supabase
+    .from('library_items')
+    .select('*', { count: 'exact' })
+    .in('category', subcategory && subcategory !== 'all' ? [subcategory] : AGENTIC_CATEGORIES)
+    .gte('quality_score', 7)
+    .order('created_at', { ascending: false })
+
+  if (tool && tool !== 'all') query = query.eq('tool', tool)
+
+  query = query.range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+  if (error) throw error
+  return { items: (data as LibraryItem[]) || [], total: count || 0 }
+}
+
 export async function getStats() {
   const { count: total } = await supabase
     .from('library_items')
