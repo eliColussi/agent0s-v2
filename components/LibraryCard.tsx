@@ -2,12 +2,13 @@ import Link from 'next/link'
 import { LibraryItem } from '@/types'
 
 const categoryColor: Record<string, string> = {
-  prompt:    'var(--cat-prompt)',
-  skill:     'var(--cat-skill)',
-  hook:      'var(--cat-hook)',
-  plugin:    'var(--cat-plugin)',
-  technique: 'var(--cat-technique)',
-  workflow:  'var(--cat-workflow)',
+  prompt:           'var(--cat-prompt)',
+  skill:            'var(--cat-skill)',
+  hook:             'var(--cat-hook)',
+  plugin:           'var(--cat-plugin)',
+  technique:        'var(--cat-technique)',
+  workflow:         'var(--cat-workflow)',
+  'niche-use-case': 'var(--cat-niche-use-case)',
 }
 
 const difficultyConfig: Record<string, { color: string; label: string }> = {
@@ -19,6 +20,7 @@ const difficultyConfig: Record<string, { color: string; label: string }> = {
 const toolLabels: Record<string, string> = {
   'claude-code':    'Claude Code',
   'chatgpt-codex':  'ChatGPT/Codex',
+  'openclaw':       'OpenCLAW',
   'general':        'General AI',
 }
 

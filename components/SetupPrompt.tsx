@@ -14,7 +14,7 @@ interface Item {
 
 /** Does this category typically require AI provider API access? */
 function needsAIProvider(category: string): boolean {
-  return ['technique', 'workflow'].includes(category)
+  return ['technique', 'workflow', 'niche-use-case'].includes(category)
 }
 
 /** Derive header verb based on category */
@@ -26,6 +26,7 @@ function headerVerb(category: string): string {
     case 'prompt': return 'Set Up'
     case 'technique': return 'Apply Technique'
     case 'workflow': return 'Set Up Workflow'
+    case 'niche-use-case': return 'Implement Use Case'
     default: return 'Set Up'
   }
 }

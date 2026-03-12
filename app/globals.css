@@ -23,6 +23,7 @@
   --cat-plugin: #10b981;
   --cat-technique: #ec4899;
   --cat-workflow: #3b82f6;
+  --cat-niche-use-case: #a78bfa;
 }
 
 [data-theme="light"] {
@@ -193,6 +194,7 @@ code {
 .cat-border-plugin    { border-left-color: var(--cat-plugin) !important; }
 .cat-border-technique { border-left-color: var(--cat-technique) !important; }
 .cat-border-workflow  { border-left-color: var(--cat-workflow) !important; }
+.cat-border-niche-use-case { border-left-color: var(--cat-niche-use-case) !important; }
 
 /* ============================================================
    SELECT ELEMENT THEMING

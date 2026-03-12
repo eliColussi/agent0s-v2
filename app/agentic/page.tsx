@@ -67,7 +67,7 @@ export default async function AgenticPage({ searchParams }: PageProps) {
         </div>
         <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-muted)', maxWidth: 640 }}>
           Skills, commands, hooks, and plugins for AI coding agents.
-          Currently tracking <span style={{ color: 'var(--accent)' }}>Claude Code</span> and <span style={{ color: 'var(--accent)' }}>Codex CLI</span>.
+          Currently tracking <span style={{ color: 'var(--accent)' }}>Claude Code</span>, <span style={{ color: 'var(--accent)' }}>Codex CLI</span>, and <span style={{ color: 'var(--accent)' }}>OpenCLAW</span>.
         </p>
       </div>
 

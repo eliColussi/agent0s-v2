@@ -1,5 +1,5 @@
-export type Category = 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow'
-export type Tool = 'claude-code' | 'chatgpt-codex' | 'general'
+export type Category = 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow' | 'niche-use-case'
+export type Tool = 'claude-code' | 'chatgpt-codex' | 'openclaw' | 'general'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 export type SourceType = 'github' | 'web' | 'reddit'
 

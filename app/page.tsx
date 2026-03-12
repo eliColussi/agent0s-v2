@@ -8,12 +8,13 @@ import { SEED_ITEMS, SEED_DIGEST, SEED_STATS } from '@/lib/seed-data'
 export const revalidate = 3600
 
 const categoryMeta = [
-  { value: 'agentic',   label: 'Agentic',    color: 'var(--cat-prompt)',    href: '/agentic' },
-  { value: 'skill',     label: 'Skills',      color: 'var(--cat-skill)',     href: '/agentic?sub=skill' },
-  { value: 'hook',      label: 'Hooks',       color: 'var(--cat-hook)',      href: '/agentic?sub=hook' },
-  { value: 'technique', label: 'Techniques',  color: 'var(--cat-technique)', href: '/library?category=technique' },
-  { value: 'workflow',  label: 'Workflows',   color: 'var(--cat-workflow)',  href: '/library?category=workflow' },
-  { value: 'plugin',    label: 'Plugins',     color: 'var(--cat-plugin)',    href: '/agentic?sub=plugin' },
+  { value: 'agentic',        label: 'Agentic',      color: 'var(--cat-prompt)',         href: '/agentic' },
+  { value: 'skill',          label: 'Skills',        color: 'var(--cat-skill)',          href: '/agentic?sub=skill' },
+  { value: 'hook',           label: 'Hooks',         color: 'var(--cat-hook)',           href: '/agentic?sub=hook' },
+  { value: 'technique',      label: 'Techniques',    color: 'var(--cat-technique)',      href: '/library?category=technique' },
+  { value: 'workflow',       label: 'Workflows',     color: 'var(--cat-workflow)',       href: '/library?category=workflow' },
+  { value: 'niche-use-case', label: 'Niche Uses',    color: 'var(--cat-niche-use-case)', href: '/library?category=niche-use-case' },
+  { value: 'plugin',         label: 'Plugins',       color: 'var(--cat-plugin)',         href: '/agentic?sub=plugin' },
 ]
 
 export default async function HomePage() {

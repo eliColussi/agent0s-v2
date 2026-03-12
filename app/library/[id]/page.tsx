@@ -8,12 +8,13 @@ import { getSeedItemById } from '@/lib/seed-data'
 export const revalidate = 3600
 
 const categoryColor: Record<string, string> = {
-  prompt:    'var(--cat-prompt)',
-  skill:     'var(--cat-skill)',
-  hook:      'var(--cat-hook)',
-  plugin:    'var(--cat-plugin)',
-  technique: 'var(--cat-technique)',
-  workflow:  'var(--cat-workflow)',
+  prompt:           'var(--cat-prompt)',
+  skill:            'var(--cat-skill)',
+  hook:             'var(--cat-hook)',
+  plugin:           'var(--cat-plugin)',
+  technique:        'var(--cat-technique)',
+  workflow:         'var(--cat-workflow)',
+  'niche-use-case': 'var(--cat-niche-use-case)',
 }
 
 const difficultyColor: Record<string, string> = {

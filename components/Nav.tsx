@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/agentic', label: 'Agentic' },
   { href: '/library?category=technique', label: 'Techniques' },
   { href: '/library?category=workflow', label: 'Workflows' },
+  { href: '/library?category=niche-use-case', label: 'Niche Uses' },
 ]
 
 export default function Nav() {

@@ -9,6 +9,7 @@ const categories = [
   { value: 'plugin', label: 'Plugins' },
   { value: 'technique', label: 'Techniques' },
   { value: 'workflow', label: 'Workflows' },
+  { value: 'niche-use-case', label: 'Niche Uses' },
 ]
 
 const difficulties = [
@@ -22,6 +23,7 @@ const tools = [
   { value: 'all', label: 'All tools' },
   { value: 'claude-code', label: 'Claude Code' },
   { value: 'chatgpt-codex', label: 'ChatGPT/Codex' },
+  { value: 'openclaw', label: 'OpenCLAW' },
   { value: 'general', label: 'General AI' },
 ]
 

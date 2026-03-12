@@ -13,6 +13,7 @@ const tools = [
   { value: 'all', label: 'All Tools' },
   { value: 'claude-code', label: 'Claude Code' },
   { value: 'chatgpt-codex', label: 'Codex CLI' },
+  { value: 'openclaw', label: 'OpenCLAW' },
 ]
 
 export default function AgenticFilter() {

@@ -28,8 +28,8 @@ interface TriageResult {
 
 interface EnrichResult {
   title: string
-  category: 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow'
-  tool: 'claude-code' | 'chatgpt-codex' | 'general'
+  category: 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow' | 'niche-use-case'
+  tool: 'claude-code' | 'chatgpt-codex' | 'openclaw' | 'general'
   difficulty: 'beginner' | 'intermediate' | 'advanced'
   quality_score: number
   ai_summary: string
@@ -54,8 +54,8 @@ const ENRICH_SCHEMA = {
   type: 'object',
   properties: {
     title: { type: 'string' },
-    category: { type: 'string', enum: ['prompt', 'skill', 'hook', 'plugin', 'technique', 'workflow'] },
-    tool: { type: 'string', enum: ['claude-code', 'chatgpt-codex', 'general'] },
+    category: { type: 'string', enum: ['prompt', 'skill', 'hook', 'plugin', 'technique', 'workflow', 'niche-use-case'] },
+    tool: { type: 'string', enum: ['claude-code', 'chatgpt-codex', 'openclaw', 'general'] },
     difficulty: { type: 'string', enum: ['beginner', 'intermediate', 'advanced'] },
     quality_score: { type: 'number' },
     ai_summary: { type: 'string' },
@@ -304,6 +304,8 @@ async function logRun(
 
 const TRIAGE_SYSTEM_PROMPT = `You are a senior content curator for an AI tools intelligence library.
 Your readers are business owners and developers who want immediately actionable AI tool knowledge.
+Core coverage areas: Claude Code, OpenAI Codex CLI, OpenCLAW framework, and agentic AI tooling in general.
+We also cover niche/unconventional use cases — real-world applications of AI coding agents in specific industries or creative scenarios.
 Be strict — most content should be discarded. Only pass items that are genuinely novel, specific, and useful.
 Respond only in valid JSON.`
 
@@ -331,15 +333,25 @@ Score this item and respond in JSON:
 }
 
 Rules:
-- "discard" if average score < 5, is_duplicate, or not about AI tools/prompts/workflows
+- "discard" if average score < 5, is_duplicate, or not about AI tools/prompts/workflows/niche use cases
 - "deep_research" if it's a GitHub repo that needs full README content to evaluate properly
 - "enrich" if it clearly has good content from the context alone
 - is_version_update = true only if this is explicitly a newer version of an existing library item`
 }
 
 const ENRICH_SYSTEM_PROMPT = `You are an expert technical writer for an AI tools intelligence library.
-Your readers are developers who use AI coding agents (Claude Code, Codex CLI) to set up tools.
+Your readers are developers who use AI coding agents (Claude Code, Codex CLI, OpenCLAW) to set up tools.
 Write for clarity, specificity, and actionability. No fluff.
+
+TOOL ASSIGNMENT:
+- tool: "claude-code" — content specifically about Claude Code (hooks, skills, CLAUDE.md, MCP, plugins)
+- tool: "chatgpt-codex" — content specifically about OpenAI Codex CLI
+- tool: "openclaw" — content specifically about the OpenCLAW agentic AI framework
+- tool: "general" — content applicable to multiple tools or general AI techniques
+
+CATEGORY ASSIGNMENT:
+- category: "niche-use-case" — real-world applications of AI tools in specific industries, unconventional/creative uses, unique problem-solving stories, edge cases that showcase what's possible. These are concrete case studies, not generic advice.
+- Other categories: prompt, skill, hook, plugin, technique, workflow (as before)
 
 CRITICAL: The "ai_actionable_steps" you write will be embedded in prompts that users paste into their AI coding agent.
 These steps must be written FOR AN AI AGENT TO EXECUTE, not for a human to follow manually.
