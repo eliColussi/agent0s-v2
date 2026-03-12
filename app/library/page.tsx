@@ -1,31 +1,15 @@
-import { getLibraryItems } from '@/lib/queries'
+import { getLibraryItems, getStats } from '@/lib/queries'
 import LibraryCard from '@/components/LibraryCard'
 import SearchBar from '@/components/SearchBar'
 import CategoryFilter from '@/components/CategoryFilter'
 import { Suspense } from 'react'
 import { Category, Tool, Difficulty, LibraryItem } from '@/types'
 import Link from 'next/link'
-import { SEED_ITEMS, SEED_STATS } from '@/lib/seed-data'
 
 export const revalidate = 3600
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}
-
-function filterSeedItems(items: LibraryItem[], params: {
-  category?: Category | 'all'
-  tool?: Tool | 'all'
-  difficulty?: Difficulty | 'all'
-  search?: string
-}) {
-  return items.filter(item => {
-    if (params.category && params.category !== 'all' && item.category !== params.category) return false
-    if (params.tool && params.tool !== 'all' && item.tool !== params.tool) return false
-    if (params.difficulty && params.difficulty !== 'all' && item.difficulty !== params.difficulty) return false
-    if (params.search && !item.title.toLowerCase().includes(params.search.toLowerCase())) return false
-    return true
-  })
 }
 
 export default async function LibraryPage({ searchParams }: PageProps) {
@@ -39,22 +23,22 @@ export default async function LibraryPage({ searchParams }: PageProps) {
   let items: LibraryItem[] = []
   let total = 0
   let totalPages = 1
+  let statsTotal = 0
 
   try {
-    const result = await getLibraryItems({ category, tool, difficulty, search, page, limit: 12 })
+    const [result, stats] = await Promise.all([
+      getLibraryItems({ category, tool, difficulty, search, page, limit: 12 }),
+      getStats(),
+    ])
     items = result.items
     total = result.total
     totalPages = Math.ceil(total / 12)
+    statsTotal = stats.total
   } catch {
-    // Fall back to seed data
-    const filtered = filterSeedItems(SEED_ITEMS, { category, tool, difficulty, search })
-    total = filtered.length
-    const limit = 12
-    totalPages = Math.ceil(total / limit)
-    items = filtered.slice((page - 1) * limit, page * limit)
+    // DB unreachable — show empty state
   }
 
-  const displayTotal = total > 0 ? total : SEED_STATS.total
+  const displayTotal = statsTotal
 
   return (
     <div style={{ maxWidth: 1280, margin: '0 auto', padding: '32px 24px 64px' }}>
@@ -115,9 +99,9 @@ export default async function LibraryPage({ searchParams }: PageProps) {
               SYSTEM STATS
             </div>
             {[
-              { label: 'Total items', value: SEED_STATS.total.toLocaleString() },
-              { label: 'New today', value: String(SEED_STATS.today) },
-              { label: 'Sources', value: String(SEED_STATS.sources) },
+              { label: 'Total items', value: displayTotal.toLocaleString() },
+              { label: 'Updated', value: 'Daily · 7am' },
+              { label: 'Sources', value: 'Web + GitHub' },
             ].map(s => (
               <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.label}</span>

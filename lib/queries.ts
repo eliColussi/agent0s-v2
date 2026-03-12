@@ -8,7 +8,7 @@ export async function getLibraryItems(filters: LibraryFilters = {}) {
   let query = supabase
     .from('library_items')
     .select('*', { count: 'exact' })
-    .gte('quality_score', 6)
+    .gte('quality_score', 7)
     .order('created_at', { ascending: false })
 
   if (category && category !== 'all') query = query.eq('category', category)
@@ -38,7 +38,7 @@ export async function getItemsByCategory(category: string, limit = 12) {
     .from('library_items')
     .select('*')
     .eq('category', category)
-    .gte('quality_score', 6)
+    .gte('quality_score', 7)
     .order('created_at', { ascending: false })
     .limit(limit)
   if (error) throw error
@@ -71,7 +71,7 @@ export async function getRecentItems(limit = 12) {
   const { data, error } = await supabase
     .from('library_items')
     .select('*')
-    .gte('quality_score', 6)
+    .gte('quality_score', 7)
     .order('created_at', { ascending: false })
     .limit(limit)
   if (error) throw error
@@ -82,6 +82,6 @@ export async function getStats() {
   const { count: total } = await supabase
     .from('library_items')
     .select('*', { count: 'exact', head: true })
-    .gte('quality_score', 6)
+    .gte('quality_score', 7)
   return { total: total || 0 }
 }
