@@ -48,10 +48,10 @@ export default function CategoryFilter() {
   }
 
   const selectStyle = {
-    height: 34,
+    height: 36,
     paddingLeft: 10,
     paddingRight: 10,
-    fontSize: 12,
+    fontSize: 13,
     borderRadius: 7,
     cursor: 'pointer',
     fontFamily: 'var(--font-mono), monospace',
@@ -70,9 +70,9 @@ export default function CategoryFilter() {
               onClick={() => setParam('category', cat.value)}
               className="font-mono"
               style={{
-                padding: '4px 11px',
+                padding: '5px 12px',
                 borderRadius: 6,
-                fontSize: 11,
+                fontSize: 12,
                 letterSpacing: '0.04em',
                 fontWeight: 500,
                 cursor: 'pointer',

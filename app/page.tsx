@@ -60,7 +60,7 @@ export default async function HomePage() {
       >
         <div
           className="ticker-inner font-mono"
-          style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.07em' }}
+          style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.07em' }}
         >
           {[1, 2].map(n => (
             <span
@@ -111,7 +111,7 @@ export default async function HomePage() {
           <h2
             className="font-mono"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               letterSpacing: '0.10em',
               color: 'var(--text-muted)',
               display: 'flex',
@@ -133,7 +133,7 @@ export default async function HomePage() {
             href="/library"
             className="font-mono"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               letterSpacing: '0.06em',
               color: 'var(--accent)',
               textDecoration: 'none',

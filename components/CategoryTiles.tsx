@@ -26,11 +26,11 @@ export default function CategoryTiles({ tiles }: { tiles: CategoryTile[] }) {
           >
             <div
               className="font-syne"
-              style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)', marginBottom: 6 }}
+              style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 6 }}
             >
               {cat.label}
             </div>
-            <div className="font-mono" style={{ fontSize: 11, color: cat.color }}>
+            <div className="font-mono" style={{ fontSize: 12, color: cat.color }}>
               {cat.count} items
             </div>
             <div style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end' }}>

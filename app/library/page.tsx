@@ -46,11 +46,11 @@ export default async function LibraryPage({ searchParams }: PageProps) {
       <div style={{ marginBottom: 28 }}>
         <h1
           className="font-syne"
-          style={{ fontWeight: 800, fontSize: 28, color: 'var(--text-primary)', letterSpacing: '-0.01em', marginBottom: 6 }}
+          style={{ fontWeight: 800, fontSize: 30, color: 'var(--text-primary)', letterSpacing: '-0.01em', marginBottom: 6 }}
         >
           INTELLIGENCE LIBRARY
         </h1>
-        <p className="font-mono" style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+        <p className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
           {displayTotal.toLocaleString()} items indexed · AI tools, prompts, hooks & techniques
         </p>
       </div>
@@ -95,7 +95,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
               padding: '14px',
             }}
           >
-            <div className="font-mono" style={{ fontSize: 10, letterSpacing: '0.10em', color: 'var(--accent)', marginBottom: 12 }}>
+            <div className="font-mono" style={{ fontSize: 11, letterSpacing: '0.10em', color: 'var(--accent)', marginBottom: 12 }}>
               SYSTEM STATS
             </div>
             {[
@@ -104,8 +104,8 @@ export default async function LibraryPage({ searchParams }: PageProps) {
               { label: 'Sources', value: 'Web + GitHub' },
             ].map(s => (
               <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.label}</span>
-                <span className="font-mono" style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{s.value}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{s.label}</span>
+                <span className="font-mono" style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{s.value}</span>
               </div>
             ))}
           </div>
@@ -117,7 +117,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
             <summary
               className="font-mono"
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 letterSpacing: '0.06em',
                 color: 'var(--accent)',
                 cursor: 'pointer',
@@ -160,19 +160,19 @@ export default async function LibraryPage({ searchParams }: PageProps) {
                     <Link
                       href={`/library?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])), page: String(page - 1) })}`}
                       className="font-mono"
-                      style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12, textDecoration: 'none' }}
+                      style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none' }}
                     >
                       ← Previous
                     </Link>
                   )}
-                  <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                  <span className="font-mono" style={{ fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
                     {page} / {totalPages}
                   </span>
                   {page < totalPages && (
                     <Link
                       href={`/library?${new URLSearchParams({ ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])), page: String(page + 1) })}`}
                       className="font-mono"
-                      style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12, textDecoration: 'none' }}
+                      style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none' }}
                     >
                       Next →
                     </Link>
@@ -182,10 +182,10 @@ export default async function LibraryPage({ searchParams }: PageProps) {
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '80px 0' }}>
-              <div className="font-mono" style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 8 }}>
+              <div className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 8 }}>
                 NO RESULTS
               </div>
-              <p style={{ fontSize: 14, color: 'var(--text-dim)' }}>
+              <p style={{ fontSize: 15, color: 'var(--text-dim)' }}>
                 Try adjusting your filters or search term
               </p>
             </div>

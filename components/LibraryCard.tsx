@@ -55,13 +55,13 @@ export default function LibraryCard({ item, index = 0 }: Props) {
           <span
             className="font-mono"
             style={{
-              fontSize: 10,
+              fontSize: 11,
               letterSpacing: '0.08em',
               color: catColor,
               background: `${catColor}18`,
               border: `1px solid ${catColor}30`,
               borderRadius: 4,
-              padding: '2px 7px',
+              padding: '2px 8px',
               textTransform: 'uppercase',
               fontWeight: 500,
             }}
@@ -82,7 +82,7 @@ export default function LibraryCard({ item, index = 0 }: Props) {
             />
             <span
               className="font-mono"
-              style={{ fontSize: 10, color: diff.color, letterSpacing: '0.04em', fontWeight: 400 }}
+              style={{ fontSize: 11, color: diff.color, letterSpacing: '0.04em', fontWeight: 400 }}
             >
               {diff.label}
             </span>
@@ -94,7 +94,7 @@ export default function LibraryCard({ item, index = 0 }: Props) {
           className="font-syne"
           style={{
             fontWeight: 600,
-            fontSize: 14,
+            fontSize: 15,
             lineHeight: 1.4,
             color: 'var(--text-primary)',
             marginBottom: 8,
@@ -112,7 +112,7 @@ export default function LibraryCard({ item, index = 0 }: Props) {
         {item.ai_summary && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: 13,
               lineHeight: 1.6,
               color: 'var(--text-muted)',
               display: '-webkit-box',
@@ -138,7 +138,7 @@ export default function LibraryCard({ item, index = 0 }: Props) {
             marginTop: 'auto',
           }}
         >
-          <span className="font-mono" style={{ fontSize: 10, color: 'var(--text-dim)', letterSpacing: '0.04em' }}>
+          <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.04em' }}>
             {toolLabels[item.tool] || item.tool}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -152,7 +152,7 @@ export default function LibraryCard({ item, index = 0 }: Props) {
                   <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.14 19.018c-3.868 0-7-3.14-7-7.018 0-3.878 3.132-7.018 7-7.018 1.89 0 3.47.697 4.682 1.829l-1.974 1.978v-.004c-.735-.702-1.667-1.062-2.708-1.062-2.31 0-4.187 1.956-4.187 4.273 0 2.315 1.877 4.277 4.187 4.277 2.096 0 3.522-1.202 3.816-2.852H12.14v-2.737h6.585c.088.47.135.96.135 1.474 0 4.01-2.677 6.86-6.72 6.86z"/>
                 </svg>
               )}
-              <span className="font-mono" style={{ fontSize: 10, color: 'var(--text-dim)' }}>
+              <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)' }}>
                 {item.source_type === 'github' ? 'GitHub' : 'Web'}
               </span>
             </span>

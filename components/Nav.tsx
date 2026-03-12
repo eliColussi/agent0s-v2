@@ -66,7 +66,7 @@ export default function Nav() {
             className="font-syne"
             style={{
               fontWeight: 700,
-              fontSize: 15,
+              fontSize: 17,
               color: 'var(--text-primary)',
               letterSpacing: '-0.02em',
             }}
@@ -87,7 +87,7 @@ export default function Nav() {
                 style={{
                   padding: '5px 12px',
                   borderRadius: 6,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 500,
                   textDecoration: 'none',
                   color: active ? 'var(--text-primary)' : 'var(--text-muted)',
@@ -112,7 +112,7 @@ export default function Nav() {
             style={{
               padding: '7px 18px',
               borderRadius: 8,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: 700,
               letterSpacing: '0.02em',
               textDecoration: 'none',
@@ -141,7 +141,7 @@ export default function Nav() {
             style={{
               alignItems: 'center',
               gap: 6,
-              fontSize: 11,
+              fontSize: 12,
               color: 'var(--text-muted)',
               letterSpacing: '0.06em',
             }}
@@ -219,7 +219,7 @@ export default function Nav() {
                 style={{
                   padding: '9px 12px',
                   borderRadius: 8,
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: 500,
                   textDecoration: 'none',
                   color: active ? 'var(--accent)' : 'var(--text-muted)',

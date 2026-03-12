@@ -60,12 +60,12 @@ export default async function AgenticPage({ searchParams }: PageProps) {
           </div>
           <h1
             className="font-syne"
-            style={{ fontWeight: 700, fontSize: 26, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
+            style={{ fontWeight: 700, fontSize: 28, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}
           >
             Agentic Tools
           </h1>
         </div>
-        <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-muted)', maxWidth: 640 }}>
+        <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--text-muted)', maxWidth: 640 }}>
           Skills, commands, hooks, and plugins for AI coding agents.
           Currently tracking <span style={{ color: 'var(--accent)' }}>Claude Code</span>, <span style={{ color: 'var(--accent)' }}>Codex CLI</span>, and <span style={{ color: 'var(--accent)' }}>OpenCLAW</span>.
         </p>
@@ -101,7 +101,7 @@ export default async function AgenticPage({ searchParams }: PageProps) {
                   borderRadius: 5,
                   background: 'rgba(232,184,75,0.15)',
                   color: 'var(--accent)',
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
@@ -110,11 +110,11 @@ export default async function AgenticPage({ searchParams }: PageProps) {
               >
                 {d.icon}
               </span>
-              <span className="font-syne" style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>
+              <span className="font-syne" style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>
                 {d.label}
               </span>
             </div>
-            <p className="font-mono" style={{ fontSize: 10, lineHeight: 1.5, color: 'var(--text-dim)', letterSpacing: '0.02em' }}>
+            <p className="font-mono" style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-dim)', letterSpacing: '0.02em' }}>
               {d.desc}
             </p>
           </div>
@@ -131,7 +131,7 @@ export default async function AgenticPage({ searchParams }: PageProps) {
       {/* Results count */}
       <div
         className="font-mono"
-        style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em', marginBottom: 16 }}
+        style={{ fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em', marginBottom: 16 }}
       >
         {total} {total === 1 ? 'item' : 'items'} found
       </div>
@@ -152,19 +152,19 @@ export default async function AgenticPage({ searchParams }: PageProps) {
                 <Link
                   href={`/agentic?${new URLSearchParams({ ...(subcategory !== 'all' ? { sub: subcategory } : {}), ...(tool !== 'all' ? { tool } : {}), page: String(page - 1) })}`}
                   className="font-mono"
-                  style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12, textDecoration: 'none' }}
+                  style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none' }}
                 >
                   Previous
                 </Link>
               )}
-              <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+              <span className="font-mono" style={{ fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
                 {page} / {totalPages}
               </span>
               {page < totalPages && (
                 <Link
                   href={`/agentic?${new URLSearchParams({ ...(subcategory !== 'all' ? { sub: subcategory } : {}), ...(tool !== 'all' ? { tool } : {}), page: String(page + 1) })}`}
                   className="font-mono"
-                  style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 12, textDecoration: 'none' }}
+                  style={{ padding: '7px 16px', borderRadius: 8, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: 13, textDecoration: 'none' }}
                 >
                   Next
                 </Link>
@@ -174,10 +174,10 @@ export default async function AgenticPage({ searchParams }: PageProps) {
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <div className="font-mono" style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 8 }}>
+          <div className="font-mono" style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.06em', marginBottom: 8 }}>
             NO RESULTS
           </div>
-          <p style={{ fontSize: 14, color: 'var(--text-dim)' }}>
+          <p style={{ fontSize: 15, color: 'var(--text-dim)' }}>
             No agentic tools found for this filter. New items are discovered daily at 7am PST.
           </p>
         </div>

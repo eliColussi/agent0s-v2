@@ -61,7 +61,7 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
           <div
             className="font-mono"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               letterSpacing: '0.10em',
               color: 'var(--accent)',
               marginBottom: 14,
@@ -88,7 +88,7 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
             className="font-syne"
             style={{
               fontWeight: 700,
-              fontSize: 'clamp(22px, 3.5vw, 36px)',
+              fontSize: 'clamp(24px, 3.5vw, 38px)',
               lineHeight: 1.2,
               letterSpacing: '-0.02em',
               color: 'var(--text-primary)',
@@ -101,7 +101,7 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
           {/* Intro */}
           <p
             style={{
-              fontSize: 15,
+              fontSize: 16,
               lineHeight: 1.65,
               color: 'var(--text-muted)',
               marginBottom: 28,
@@ -130,7 +130,7 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
                 <div
                   className="font-mono"
                   style={{
-                    fontSize: 10,
+                    fontSize: 11,
                     letterSpacing: '0.10em',
                     color: 'var(--accent)',
                     marginBottom: 4,
@@ -182,13 +182,13 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
               >
                 <div
                   className="font-mono"
-                  style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: 4, textTransform: 'uppercase' }}
+                  style={{ fontSize: 10, letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: 4, textTransform: 'uppercase' }}
                 >
                   {item.category}
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: 600,
                     color: 'var(--text-primary)',
                     lineHeight: 1.35,

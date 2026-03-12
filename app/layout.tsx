@@ -40,10 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
             <footer style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', marginTop: 'auto' }}>
               <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <span className="font-mono" style={{ fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                <span className="font-mono" style={{ fontSize: 13, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
                   Agent0s · AI Intelligence Library
                 </span>
-                <span className="font-mono" style={{ fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                <span className="font-mono" style={{ fontSize: 13, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
                   Updated daily · 7am PST
                 </span>
               </div>

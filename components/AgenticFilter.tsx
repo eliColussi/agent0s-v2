@@ -49,7 +49,7 @@ export default function AgenticFilter() {
               style={{
                 padding: '6px 14px',
                 borderRadius: 8,
-                fontSize: 12,
+                fontSize: 13,
                 letterSpacing: '0.04em',
                 fontWeight: 500,
                 cursor: 'pointer',
@@ -78,7 +78,7 @@ export default function AgenticFilter() {
               style={{
                 padding: '5px 12px',
                 borderRadius: 6,
-                fontSize: 11,
+                fontSize: 12,
                 letterSpacing: '0.04em',
                 fontWeight: 500,
                 cursor: 'pointer',
