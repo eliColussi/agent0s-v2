@@ -1,0 +1,33 @@
+import type { Metadata } from 'next'
+import { Inter, JetBrains_Mono } from 'next/font/google'
+import './globals.css'
+import Nav from '@/components/Nav'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const jetbrains = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
+
+export const metadata: Metadata = {
+  title: 'AI Tools Daily — Living Library',
+  description: 'The freshest AI tools, prompts, hooks, and techniques — curated daily for business owners and builders.',
+  openGraph: {
+    title: 'AI Tools Daily',
+    description: 'Daily-updated library of AI tools, prompts, and techniques.',
+    type: 'website',
+  },
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
+      <body className="min-h-screen relative">
+        <div className="grid-overlay min-h-screen relative z-10">
+          <Nav />
+          <main className="relative z-10">{children}</main>
+          <footer className="border-t border-white/5 mt-20 py-8 text-center text-sm text-white/30">
+            <p>AI Tools Daily · Updated every morning at 7am PST · Built for the community</p>
+          </footer>
+        </div>
+      </body>
+    </html>
+  )
+}
