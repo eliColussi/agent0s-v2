@@ -1,153 +1,370 @@
-import { callModel, MODELS } from './openrouter'
-import { createServerClient } from './supabase'
-import { scrapeGitHub } from './scrapers/github'
-import { scrapeReddit } from './scrapers/reddit'
+/**
+ * Agent0s — 4-Stage Intelligence Pipeline
+ *
+ * Stage 1: Discovery   — Perplexity Sonar Pro finds fresh content across the web
+ * Stage 2: Triage      — Gemini 2.5 Flash parallel-scores every candidate
+ * Stage 3: Deep Res.   — GitHub API fetches full content for GitHub URLs
+ * Stage 4: Enrichment  — Claude Sonnet generates everything users read
+ *         + Digest     — Claude Opus writes the daily briefing headline
+ */
 
-interface RawItem {
-  title: string
-  source_url: string
-  raw_content: string
-  source_type: 'github' | 'reddit'
+import { callJSON, callSchema, batchAsync, MODELS } from './openrouter'
+import { createServerClient } from './supabase'
+import { runDiscovery, DiscoveryResult } from './scrapers/perplexity'
+import { fetchGitHubContent } from './scrapers/github'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface TriageResult {
+  verdict: 'enrich' | 'deep_research' | 'discard'
+  novelty_score: number        // 0-10: how new/fresh is this?
+  actionability_score: number  // 0-10: can a dev/owner use this today?
+  audience_fit_score: number   // 0-10: right for our readers?
+  is_duplicate: boolean
+  is_version_update: boolean
+  supersedes_title: string | null
+  reason: string
 }
+
+interface EnrichResult {
+  title: string
+  category: 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow'
+  tool: 'claude-code' | 'chatgpt-codex' | 'general'
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  quality_score: number
+  ai_summary: string
+  ai_actionable_steps: string[]
+  ai_project_ideas: { title: string; description: string }[]
+  ai_business_use_cases: string[]
+  code_snippet: string | null
+  tags: string[]
+  version_label: string | null
+  is_version_update: boolean
+}
+
+interface ReadyItem extends DiscoveryResult {
+  triage: TriageResult
+  raw_content: string
+  github_stars: number | null
+}
+
+// ─── JSON Schema for enrichment (Sonnet respects this precisely) ──────────────
+
+const ENRICH_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    category: { type: 'string', enum: ['prompt', 'skill', 'hook', 'plugin', 'technique', 'workflow'] },
+    tool: { type: 'string', enum: ['claude-code', 'chatgpt-codex', 'general'] },
+    difficulty: { type: 'string', enum: ['beginner', 'intermediate', 'advanced'] },
+    quality_score: { type: 'number' },
+    ai_summary: { type: 'string' },
+    ai_actionable_steps: { type: 'array', items: { type: 'string' } },
+    ai_project_ideas: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          description: { type: 'string' },
+        },
+        required: ['title', 'description'],
+        additionalProperties: false,
+      },
+    },
+    ai_business_use_cases: { type: 'array', items: { type: 'string' } },
+    code_snippet: { type: 'string' },
+    tags: { type: 'array', items: { type: 'string' } },
+    version_label: { type: 'string' },
+    is_version_update: { type: 'boolean' },
+  },
+  required: [
+    'title', 'category', 'tool', 'difficulty', 'quality_score', 'ai_summary',
+    'ai_actionable_steps', 'ai_project_ideas', 'ai_business_use_cases',
+    'code_snippet', 'tags', 'version_label', 'is_version_update',
+  ],
+  additionalProperties: false,
+}
+
+// ─── Main pipeline ────────────────────────────────────────────────────────────
 
 export async function runScrapeAndProcess() {
   const db = createServerClient()
-  const log = { items_found: 0, items_saved: 0, items_rejected: 0, sources_scraped: [] as string[], error_message: null as string | null }
+  const runLog = {
+    items_found: 0,
+    items_saved: 0,
+    items_rejected: 0,
+    sources_scraped: ['perplexity-sonar', 'github'] as string[],
+    error_message: null as string | null,
+  }
 
   try {
-    // Scrape
-    const [githubItems, redditItems] = await Promise.all([
-      scrapeGitHub().catch(() => [] as RawItem[]),
-      scrapeReddit().catch(() => [] as RawItem[]),
+    // ── Pre-load existing data for deduplication ──────────────────────────────
+    const [existingUrlsRes, existingTitlesRes] = await Promise.all([
+      db.from('library_items').select('source_url'),
+      db.from('library_items').select('id, title').order('created_at', { ascending: false }).limit(300),
     ])
 
-    const allRaw = [...githubItems, ...redditItems]
-    log.sources_scraped = ['github', 'reddit']
-    log.items_found = allRaw.length
+    const existingUrls = new Set(
+      (existingUrlsRes.data || []).map((r: { source_url: string }) => r.source_url)
+    )
+    const existingItems: { id: string; title: string }[] = existingTitlesRes.data || []
+    const existingTitlesList = existingItems.map(i => i.title).join('\n')
 
-    // Deduplicate against existing URLs
-    const urls = allRaw.map(i => i.source_url)
-    const { data: existing } = await db.from('library_items').select('source_url').in('source_url', urls)
-    const existingUrls = new Set((existing || []).map((e: { source_url: string }) => e.source_url))
-    const newItems = allRaw.filter(i => !existingUrls.has(i.source_url))
+    // ── STAGE 1: Discovery ────────────────────────────────────────────────────
+    console.log('Stage 1: Discovery...')
+    const discovered = await runDiscovery()
 
-    // Process each new item
-    for (const item of newItems) {
-      try {
-        // Stage 1: Filter
-        const filterResult = await callModel(MODELS.filter, `Is this genuinely useful AI tool content (prompts, hooks, skills, workflows, techniques for Claude Code or ChatGPT/Codex)?
-Title: ${item.title}
-Content: ${item.raw_content.slice(0, 500)}
-Respond: {"include": true/false, "reason": "..."}`) as { include: boolean; reason: string }
+    // Deduplicate against DB (exact URL match — free and instant)
+    const newCandidates = discovered.filter(d => !existingUrls.has(d.source_url))
+    runLog.items_found = newCandidates.length
+    console.log(`  Found ${discovered.length} URLs, ${newCandidates.length} new after dedup`)
 
-        if (!filterResult.include) {
-          log.items_rejected++
-          continue
+    if (newCandidates.length === 0) {
+      await logRun(db, runLog)
+      return runLog
+    }
+
+    // ── STAGE 2: Triage ───────────────────────────────────────────────────────
+    console.log('Stage 2: Triage...')
+    const triageResults = await batchAsync(newCandidates, 10, async (candidate) => {
+      const result = await callJSON<TriageResult>(
+        MODELS.triage,
+        buildTriagePrompt(candidate, existingTitlesList),
+        {
+          fallback: MODELS.triage_fallback,
+          system: TRIAGE_SYSTEM_PROMPT,
+        }
+      )
+      return { candidate, triage: result }
+    })
+
+    const triaged = triageResults.filter(Boolean) as { candidate: DiscoveryResult; triage: TriageResult }[]
+    const passed = triaged.filter(t =>
+      t.triage.verdict !== 'discard' && !t.triage.is_duplicate
+    )
+
+    console.log(`  Triage: ${passed.length}/${triaged.length} passed`)
+    runLog.items_rejected += triaged.length - passed.length
+
+    // ── STAGE 3: Deep Research (GitHub URLs) ──────────────────────────────────
+    console.log('Stage 3: Deep research...')
+    const readyItems: ReadyItem[] = await Promise.all(
+      passed.map(async ({ candidate, triage }) => {
+        let raw_content = candidate.context
+        let github_stars: number | null = null
+
+        if (candidate.source_type === 'github' || triage.verdict === 'deep_research') {
+          const github = await fetchGitHubContent(candidate.source_url).catch(() => null)
+          if (github) {
+            raw_content = github.raw_content
+            github_stars = github.github_stars
+          }
         }
 
-        // Stage 2: Enrich
-        const enriched = await callModel(MODELS.enrich, `You are processing content for a library of AI tool tips. Extract and generate:
-Title: ${item.title}
-Source: ${item.source_type}
-Content: ${item.raw_content.slice(0, 3000)}
+        return { ...candidate, triage, raw_content, github_stars }
+      })
+    )
 
-Respond in JSON:
-{
-  "title": "concise descriptive title",
-  "category": "prompt|skill|hook|plugin|technique|workflow",
-  "tool": "claude-code|chatgpt-codex|general",
-  "difficulty": "beginner|intermediate|advanced",
-  "quality_score": 0-10,
-  "ai_summary": "2-3 sentences plain English for non-technical business owners",
-  "ai_actionable_steps": ["step 1", "step 2", "step 3"],
-  "ai_project_ideas": [{"title": "...", "description": "..."}],
-  "ai_business_use_cases": ["use case 1", "use case 2"],
-  "code_snippet": "extracted code block or null",
-  "tags": ["tag1", "tag2", "tag3"]
-}`) as {
-          title: string; category: string; tool: string; difficulty: string;
-          quality_score: number; ai_summary: string; ai_actionable_steps: string[];
-          ai_project_ideas: { title: string; description: string }[];
-          ai_business_use_cases: string[]; code_snippet: string | null; tags: string[]
-        }
+    // ── STAGE 4: Enrichment ───────────────────────────────────────────────────
+    console.log('Stage 4: Enrichment...')
+    const enriched = await batchAsync(readyItems, 5, async (item) => {
+      const result = await callSchema<EnrichResult>({
+        model: MODELS.enrich,
+        fallback: MODELS.enrich_fallback,
+        system: ENRICH_SYSTEM_PROMPT,
+        prompt: buildEnrichPrompt(item, existingItems),
+        schemaName: 'enrich_result',
+        schema: ENRICH_SCHEMA,
+      })
+      return { item, enriched: result }
+    })
 
-        if (!enriched.quality_score || enriched.quality_score < 6) {
-          log.items_rejected++
-          continue
-        }
+    // ── Save to Supabase ──────────────────────────────────────────────────────
+    for (const result of enriched) {
+      if (!result) { runLog.items_rejected++; continue }
+      const { item, enriched: e } = result
 
-        await db.from('library_items').insert({
-          title: enriched.title,
-          raw_content: item.raw_content,
-          source_url: item.source_url,
-          source_type: item.source_type,
-          category: enriched.category,
-          tool: enriched.tool,
-          difficulty: enriched.difficulty,
-          quality_score: enriched.quality_score,
-          ai_summary: enriched.ai_summary,
-          ai_actionable_steps: enriched.ai_actionable_steps,
-          ai_project_ideas: enriched.ai_project_ideas,
-          ai_business_use_cases: enriched.ai_business_use_cases,
-          code_snippet: enriched.code_snippet,
-          tags: enriched.tags,
-        })
+      if (!e.quality_score || e.quality_score < 6) {
+        runLog.items_rejected++
+        continue
+      }
 
-        log.items_saved++
-      } catch (e) {
-        console.error('Error processing item:', e)
-        log.items_rejected++
+      // If this is a version update, find the superseded item's ID
+      let supersedes_id: string | null = null
+      if (e.is_version_update && item.triage.supersedes_title) {
+        const match = existingItems.find(i =>
+          i.title.toLowerCase().includes(
+            item.triage.supersedes_title!.toLowerCase().slice(0, 30)
+          )
+        )
+        supersedes_id = match?.id ?? null
+      }
+
+      const { error } = await db.from('library_items').insert({
+        title: e.title,
+        raw_content: item.raw_content.slice(0, 8000),
+        source_url: item.source_url,
+        source_type: item.source_type,
+        category: e.category,
+        tool: e.tool,
+        difficulty: e.difficulty,
+        quality_score: e.quality_score,
+        ai_summary: e.ai_summary,
+        ai_actionable_steps: e.ai_actionable_steps,
+        ai_project_ideas: e.ai_project_ideas,
+        ai_business_use_cases: e.ai_business_use_cases,
+        code_snippet: e.code_snippet || null,
+        tags: e.tags,
+        version_label: e.version_label || null,
+        is_version_update: e.is_version_update,
+        supersedes_id,
+        github_stars: item.github_stars,
+      })
+
+      if (error) {
+        console.error('Insert error:', error.message)
+        runLog.items_rejected++
+      } else {
+        runLog.items_saved++
       }
     }
 
-    // Generate daily digest
-    await generateDailyDigest(db, log.items_saved)
+    console.log(`Pipeline complete: ${runLog.items_saved} saved, ${runLog.items_rejected} rejected`)
+
+    // ── Daily Digest ──────────────────────────────────────────────────────────
+    await generateDailyDigest(db, runLog.items_saved)
 
   } catch (e) {
-    log.error_message = String(e)
+    console.error('Pipeline error:', e)
+    runLog.error_message = String(e)
   }
 
-  // Log run
-  await db.from('scrape_logs').insert({
-    sources_scraped: log.sources_scraped,
-    items_found: log.items_found,
-    items_saved: log.items_saved,
-    items_rejected: log.items_rejected,
-    status: log.error_message ? 'failed' : log.items_saved > 0 ? 'success' : 'partial',
-    error_message: log.error_message,
-  })
-
-  return log
+  await logRun(db, runLog)
+  return runLog
 }
 
-async function generateDailyDigest(db: ReturnType<typeof createServerClient>, newItemsCount: number) {
+// ─── Daily Digest — Claude Opus (one call/day) ────────────────────────────────
+
+async function generateDailyDigest(
+  db: ReturnType<typeof createServerClient>,
+  newCount: number
+) {
   const today = new Date().toISOString().split('T')[0]
 
-  // Get today's top items
-  const { data: topItems } = await db.from('library_items')
-    .select('id, title, ai_summary, category')
+  const { data: topItems } = await db
+    .from('library_items')
+    .select('id, title, category, quality_score')
     .gte('quality_score', 7)
     .order('created_at', { ascending: false })
     .limit(10)
 
   if (!topItems?.length) return
 
-  const digest = await callModel(MODELS.digest, `Generate a daily digest intro for an AI tools library website. Today we found ${newItemsCount} new AI tools, prompts, and techniques.
+  const digest = await callJSON<{ headline: string; intro_paragraph: string }>(
+    MODELS.digest,
+    `You are the editor of an AI tools intelligence briefing read by business owners and developers.
+Today's scrape found ${newCount} new items. Top items discovered:
+${topItems.slice(0, 5).map((i: { title: string; category: string }) => `• ${i.title} (${i.category})`).join('\n')}
 
-Top items found today:
-${topItems.slice(0, 5).map((i: { title: string; category: string }) => `- ${i.title} (${i.category})`).join('\n')}
-
-Respond in JSON:
-{
-  "headline": "compelling 8-12 word headline for today's discoveries",
-  "intro_paragraph": "2 sentence intro that excites business owners about today's finds"
-}`) as { headline: string; intro_paragraph: string }
+Write today's briefing intro. Be sharp, specific, and make readers excited to explore.
+Respond in JSON: { "headline": "8-12 word compelling headline", "intro_paragraph": "2 punchy sentences" }`,
+    { fallback: MODELS.digest_fallback }
+  )
 
   await db.from('daily_digests').upsert({
     date: today,
     headline: digest.headline,
     intro_paragraph: digest.intro_paragraph,
     featured_item_ids: topItems.slice(0, 5).map((i: { id: string }) => i.id),
-    total_new_items: newItemsCount,
+    total_new_items: newCount,
   }, { onConflict: 'date' })
+}
+
+// ─── Logging ──────────────────────────────────────────────────────────────────
+
+async function logRun(
+  db: ReturnType<typeof createServerClient>,
+  log: typeof import('./pipeline').runScrapeAndProcess extends (...args: unknown[]) => Promise<infer R> ? R : never
+) {
+  await db.from('scrape_logs').insert({
+    sources_scraped: (log as { sources_scraped: string[] }).sources_scraped,
+    items_found: (log as { items_found: number }).items_found,
+    items_saved: (log as { items_saved: number }).items_saved,
+    items_rejected: (log as { items_rejected: number }).items_rejected,
+    status: (log as { error_message: string | null }).error_message
+      ? 'failed'
+      : (log as { items_saved: number }).items_saved > 0 ? 'success' : 'partial',
+    error_message: (log as { error_message: string | null }).error_message,
+  })
+}
+
+// ─── Prompts ──────────────────────────────────────────────────────────────────
+
+const TRIAGE_SYSTEM_PROMPT = `You are a senior content curator for an AI tools intelligence library.
+Your readers are business owners and developers who want immediately actionable AI tool knowledge.
+Be strict — most content should be discarded. Only pass items that are genuinely novel, specific, and useful.
+Respond only in valid JSON.`
+
+function buildTriagePrompt(candidate: DiscoveryResult, existingTitles: string): string {
+  return `Evaluate this discovered item for our AI tools library.
+
+URL: ${candidate.source_url}
+Title: ${candidate.title}
+Source type: ${candidate.source_type}
+Discovery context: ${candidate.context.slice(0, 800)}
+
+EXISTING LIBRARY TITLES (check for duplicates and version updates):
+${existingTitles.slice(0, 3000)}
+
+Score this item and respond in JSON:
+{
+  "verdict": "enrich | deep_research | discard",
+  "novelty_score": 0-10,
+  "actionability_score": 0-10,
+  "audience_fit_score": 0-10,
+  "is_duplicate": true/false,
+  "is_version_update": true/false,
+  "supersedes_title": "exact title from library it supersedes, or null",
+  "reason": "one sentence explaining your verdict"
+}
+
+Rules:
+- "discard" if average score < 5, is_duplicate, or not about AI tools/prompts/workflows
+- "deep_research" if it's a GitHub repo that needs full README content to evaluate properly
+- "enrich" if it clearly has good content from the context alone
+- is_version_update = true only if this is explicitly a newer version of an existing library item`
+}
+
+const ENRICH_SYSTEM_PROMPT = `You are an expert technical writer for an AI tools intelligence library.
+Your readers are business owners and developers who want to act immediately on what they learn.
+Write for clarity, specificity, and actionability. No fluff.
+Every actionable step should start with an imperative verb and be completable in under 30 minutes.`
+
+function buildEnrichPrompt(
+  item: ReadyItem,
+  existingItems: { id: string; title: string }[]
+): string {
+  const maybeSupersedes = item.triage.is_version_update && item.triage.supersedes_title
+    ? `\nNOTE: This appears to supersede: "${item.triage.supersedes_title}"`
+    : ''
+
+  return `Transform this raw content into a library entry for our AI tools intelligence platform.${maybeSupersedes}
+
+Source URL: ${item.source_url}
+Source type: ${item.source_type}
+Stars: ${item.github_stars ?? 'N/A'}
+Raw content:
+---
+${item.raw_content.slice(0, 4000)}
+---
+
+Generate a complete library entry. Be specific and concrete — no generic advice.
+quality_score: 1-10 (be harsh. 9-10 = life-changing for our readers, 6-8 = genuinely useful, below 6 = not worth publishing)
+ai_summary: 2-3 sentences, plain English for a non-technical business owner
+ai_actionable_steps: exactly 3 steps, each completable today, starting with an imperative verb
+ai_project_ideas: exactly 2 ideas, specific and buildable
+ai_business_use_cases: exactly 2 real business scenarios
+code_snippet: extracted code block if present, otherwise empty string
+version_label: version string if explicitly versioned (e.g. "v2", "2.0"), otherwise empty string`
 }

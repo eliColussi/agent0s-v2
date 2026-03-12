@@ -1,84 +1,95 @@
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN
+/**
+ * Stage 3: GitHub Deep Research
+ *
+ * For items where Sonar discovered a GitHub URL, this fetches the full
+ * README and repo metadata. Gives the enrichment model (Sonnet) real
+ * content to work with instead of just a Sonar summary.
+ */
+
 const BASE_URL = 'https://api.github.com'
 
-const SEARCH_QUERIES = [
-  { q: '"claude code" hooks language:markdown stars:>2', type: 'code' },
-  { q: 'CLAUDE.md hooks filename:CLAUDE.md', type: 'code' },
-  { q: '"claude code" prompts stars:>3', type: 'repositories' },
-  { q: '"claude-code" skills', type: 'repositories' },
-]
-
-interface GitHubRawItem {
-  title: string
-  source_url: string
+export interface GitHubContent {
   raw_content: string
-  source_type: 'github'
+  github_stars: number | null
 }
 
 async function githubFetch(url: string) {
   const res = await fetch(url, {
     headers: {
-      Authorization: `token ${GITHUB_TOKEN}`,
+      Authorization: `token ${process.env.GITHUB_TOKEN}`,
       Accept: 'application/vnd.github.v3+json',
-      'User-Agent': 'AI-Tools-Daily/1.0',
+      'User-Agent': 'Agent0s/1.0',
     },
   })
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`)
+  if (!res.ok) throw new Error(`GitHub API ${res.status}: ${url}`)
   return res.json()
 }
 
-export async function scrapeGitHub(): Promise<GitHubRawItem[]> {
-  const results: GitHubRawItem[] = []
+function parseGitHubUrl(url: string): { owner: string; repo: string; filePath?: string } | null {
+  try {
+    const { hostname, pathname } = new URL(url)
+    if (!hostname.includes('github.com')) return null
+    const parts = pathname.split('/').filter(Boolean)
+    if (parts.length < 2) return null
 
-  for (const { q, type } of SEARCH_QUERIES) {
-    try {
-      const endpoint = type === 'code'
-        ? `${BASE_URL}/search/code?q=${encodeURIComponent(q)}&per_page=10`
-        : `${BASE_URL}/search/repositories?q=${encodeURIComponent(q)}&per_page=10&sort=stars`
+    // /owner/repo/blob/branch/path/to/file → extract filePath
+    const filePath = parts[2] === 'blob' && parts.length > 4
+      ? parts.slice(4).join('/')
+      : undefined
 
-      const data = await githubFetch(endpoint)
-      const items = data.items || []
-
-      for (const item of items.slice(0, 5)) {
-        try {
-          let content = ''
-          let url = ''
-
-          if (type === 'code') {
-            url = item.html_url
-            const rawUrl = item.url.replace('https://api.github.com/repos', 'https://raw.githubusercontent.com').replace('/contents/', '/').replace(/\?ref=.*/, '')
-            const rawRes = await fetch(rawUrl)
-            content = rawRes.ok ? await rawRes.text() : item.name
-          } else {
-            url = item.html_url
-            const readme = await githubFetch(`${BASE_URL}/repos/${item.full_name}/readme`)
-              .catch(() => null)
-            if (readme?.download_url) {
-              const rawRes = await fetch(readme.download_url)
-              content = rawRes.ok ? await rawRes.text() : item.description || ''
-            } else {
-              content = item.description || item.full_name
-            }
-          }
-
-          if (content.length > 100) {
-            results.push({
-              title: item.name || item.full_name,
-              source_url: url,
-              raw_content: content.slice(0, 4000),
-              source_type: 'github',
-            })
-          }
-        } catch (e) {
-          console.error('Error fetching GitHub item:', e)
-        }
-      }
-
-      await new Promise(r => setTimeout(r, 1000)) // rate limit
-    } catch (e) {
-      console.error('GitHub search error:', e)
-    }
+    return { owner: parts[0], repo: parts[1], filePath }
+  } catch {
+    return null
   }
+}
 
-  return results
+export async function fetchGitHubContent(url: string): Promise<GitHubContent | null> {
+  const parsed = parseGitHubUrl(url)
+  if (!parsed) return null
+
+  const { owner, repo, filePath } = parsed
+
+  try {
+    // Fetch repo metadata and README in parallel
+    const [repoRes, readmeRes] = await Promise.allSettled([
+      githubFetch(`${BASE_URL}/repos/${owner}/${repo}`),
+      githubFetch(`${BASE_URL}/repos/${owner}/${repo}/readme`),
+    ])
+
+    let content = ''
+    let stars: number | null = null
+
+    if (repoRes.status === 'fulfilled') {
+      const r = repoRes.value
+      stars = r.stargazers_count ?? null
+      content += `Repository: ${r.full_name}\n`
+      content += `Description: ${r.description || 'No description'}\n`
+      content += `Stars: ${stars ?? 0} | Language: ${r.language || 'N/A'} | Last updated: ${r.updated_at}\n\n`
+    }
+
+    // If URL pointed to a specific file, fetch that too
+    if (filePath) {
+      const fileRes = await githubFetch(
+        `${BASE_URL}/repos/${owner}/${repo}/contents/${filePath}`
+      ).catch(() => null)
+
+      if (fileRes?.download_url) {
+        const raw = await fetch(fileRes.download_url)
+        if (raw.ok) content += (await raw.text()).slice(0, 4000) + '\n\n'
+      }
+    }
+
+    // Append README content
+    if (readmeRes.status === 'fulfilled' && readmeRes.value?.download_url) {
+      const raw = await fetch(readmeRes.value.download_url)
+      if (raw.ok) content += (await raw.text()).slice(0, 4000)
+    }
+
+    if (content.length < 80) return null
+
+    return { raw_content: content.slice(0, 6000), github_stars: stars }
+  } catch (e) {
+    console.error(`GitHub deep research failed for ${url}:`, e)
+    return null
+  }
 }
