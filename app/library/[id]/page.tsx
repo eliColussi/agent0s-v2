@@ -366,10 +366,10 @@ export default async function ItemDetailPage({ params }: Props) {
           }}
         >
           <div className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.04em' }}>
-            Source: {item.source_type.toUpperCase()}
+            Source: {(item.source_type || 'unknown').toUpperCase()}
             {item.quality_score != null && ` · Quality score: ${item.quality_score}/10`}
           </div>
-          <a
+          {/^https?:\/\//i.test(item.source_url || '') && <a
             href={item.source_url}
             target="_blank"
             rel="noopener noreferrer"
@@ -390,7 +390,7 @@ export default async function ItemDetailPage({ params }: Props) {
               <polyline points="15 3 21 3 21 9"/>
               <line x1="10" y1="14" x2="21" y2="3"/>
             </svg>
-          </a>
+          </a>}
         </div>
       </div>
     </div>

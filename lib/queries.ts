@@ -1,20 +1,28 @@
 import { supabase } from './supabase'
 import { LibraryItem, DailyDigest, LibraryFilters } from '@/types'
 
+/** Columns safe to return to the client (excludes raw_content) */
+const PUBLIC_COLUMNS = 'id, title, category, tool, difficulty, quality_score, ai_summary, ai_actionable_steps, ai_project_ideas, ai_business_use_cases, code_snippet, tags, source_url, source_type, is_featured, github_stars, upvotes, version_label, is_version_update, supersedes_id, created_at, scraped_at'
+
+/** Escape LIKE/ILIKE wildcard characters in user input */
+function escapeLike(s: string): string {
+  return s.replace(/%/g, '\\%').replace(/_/g, '\\_')
+}
+
 export async function getLibraryItems(filters: LibraryFilters = {}) {
   const { category, tool, difficulty, search, page = 1, limit = 12 } = filters
   const offset = (page - 1) * limit
 
   let query = supabase
     .from('library_items')
-    .select('*', { count: 'exact' })
+    .select(PUBLIC_COLUMNS, { count: 'exact' })
     .gte('quality_score', 7)
     .order('created_at', { ascending: false })
 
   if (category && category !== 'all') query = query.eq('category', category)
   if (tool && tool !== 'all') query = query.eq('tool', tool)
   if (difficulty && difficulty !== 'all') query = query.eq('difficulty', difficulty)
-  if (search) query = query.ilike('title', `%${search}%`)
+  if (search) query = query.ilike('title', `%${escapeLike(search)}%`)
 
   query = query.range(offset, offset + limit - 1)
 
@@ -26,7 +34,7 @@ export async function getLibraryItems(filters: LibraryFilters = {}) {
 export async function getItemById(id: string) {
   const { data, error } = await supabase
     .from('library_items')
-    .select('*')
+    .select(PUBLIC_COLUMNS)
     .eq('id', id)
     .single()
   if (error) throw error
@@ -36,7 +44,7 @@ export async function getItemById(id: string) {
 export async function getItemsByCategory(category: string, limit = 12) {
   const { data, error } = await supabase
     .from('library_items')
-    .select('*')
+    .select(PUBLIC_COLUMNS)
     .eq('category', category)
     .gte('quality_score', 7)
     .order('created_at', { ascending: false })
@@ -61,7 +69,7 @@ export async function getFeaturedItems(ids: string[]) {
   if (!ids?.length) return []
   const { data, error } = await supabase
     .from('library_items')
-    .select('*')
+    .select(PUBLIC_COLUMNS)
     .in('id', ids)
   if (error) throw error
   return (data as LibraryItem[]) || []
@@ -70,7 +78,7 @@ export async function getFeaturedItems(ids: string[]) {
 export async function getRecentItems(limit = 12) {
   const { data, error } = await supabase
     .from('library_items')
-    .select('*')
+    .select(PUBLIC_COLUMNS)
     .gte('quality_score', 7)
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -91,7 +99,7 @@ export async function getAgenticItems(filters: {
 
   let query = supabase
     .from('library_items')
-    .select('*', { count: 'exact' })
+    .select(PUBLIC_COLUMNS, { count: 'exact' })
     .in('category', subcategory && subcategory !== 'all' ? [subcategory] : AGENTIC_CATEGORIES)
     .gte('quality_score', 7)
     .order('created_at', { ascending: false })

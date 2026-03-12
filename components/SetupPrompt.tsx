@@ -102,7 +102,11 @@ function buildPrompt(item: Item): string {
   lines.push('')
 
   // ── Source access instructions ──
-  if (isRepoUrl) {
+  // Validate GitHub URLs match expected patterns before embedding in shell commands
+  const safeGitHubRepo = isRepoUrl && /^https:\/\/github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+\/?$/.test(item.source_url)
+  const safeGitHubFile = isGitHubFile && /^https:\/\/github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+\/blob\//.test(item.source_url)
+
+  if (safeGitHubRepo) {
     lines.push('## Fetch the Source')
     lines.push('')
     lines.push(`Clone or inspect the repository to understand what needs to be installed:`)
@@ -111,7 +115,7 @@ function buildPrompt(item: Item): string {
     lines.push('```')
     lines.push('Review the README, directory structure, and any install instructions before proceeding.')
     lines.push('')
-  } else if (isGitHubFile) {
+  } else if (safeGitHubFile) {
     lines.push('## Fetch the Source')
     lines.push('')
     lines.push('Fetch the raw file content from GitHub:')

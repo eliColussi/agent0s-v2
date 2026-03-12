@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
     tool: (searchParams.get('tool') as Tool | 'all') || 'all',
     difficulty: (searchParams.get('difficulty') as Difficulty | 'all') || 'all',
     search: searchParams.get('search') || undefined,
-    page: parseInt(searchParams.get('page') || '1'),
-    limit: parseInt(searchParams.get('limit') || '12'),
+    page: Math.max(parseInt(searchParams.get('page') || '1') || 1, 1),
+    limit: Math.min(Math.max(parseInt(searchParams.get('limit') || '12') || 12, 1), 50),
   }
 
   try {
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate' },
     })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    console.error('Library API error:', e)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
