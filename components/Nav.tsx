@@ -100,9 +100,11 @@ export default function Nav() {
 
         {/* Right side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          {/* Browse Library CTA */}
-          <Link
-            href="/library"
+          {/* Learn AI CTA */}
+          <a
+            href="https://www.skool.com/ai-staffroom/about"
+            target="_blank"
+            rel="noopener noreferrer"
             className="font-syne hidden sm:inline-flex"
             style={{
               padding: '7px 18px',
@@ -129,8 +131,8 @@ export default function Nav() {
               e.currentTarget.style.boxShadow = '0 0 16px rgba(232, 184, 75, 0.3), 0 1px 2px rgba(0,0,0,0.2)'
             }}
           >
-            Browse Library
-          </Link>
+            Learn AI
+          </a>
 
           {/* Live status */}
           <div
@@ -229,8 +231,10 @@ export default function Nav() {
               </Link>
             )
           })}
-          <Link
-            href="/library"
+          <a
+            href="https://www.skool.com/ai-staffroom/about"
+            target="_blank"
+            rel="noopener noreferrer"
             className="font-syne"
             onClick={() => setMobileOpen(false)}
             style={{
@@ -246,26 +250,7 @@ export default function Nav() {
               boxShadow: '0 0 16px rgba(232, 184, 75, 0.3)',
             }}
           >
-            Browse Library
-          </Link>
-          <a
-            href="https://www.skool.com/ai-staffroom/about"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono"
-            onClick={() => setMobileOpen(false)}
-            style={{
-              padding: '9px 16px',
-              borderRadius: 8,
-              fontSize: 13,
-              textDecoration: 'none',
-              textAlign: 'center',
-              color: 'var(--text-muted)',
-              border: '1px solid var(--border)',
-              marginTop: 4,
-            }}
-          >
-            Learn AI →
+            Learn AI
           </a>
         </div>
       )}

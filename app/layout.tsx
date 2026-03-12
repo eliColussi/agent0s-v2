@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
-import { Syne, IBM_Plex_Mono } from 'next/font/google'
+import { Space_Grotesk, IBM_Plex_Mono } from 'next/font/google'
 import './globals.css'
 import Nav from '@/components/Nav'
 import { ThemeProvider } from '@/components/ThemeProvider'
 
-const syne = Syne({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
+  weight: ['500', '600', '700'],
   variable: '--font-syne',
   display: 'swap',
 })
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${syne.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${spaceGrotesk.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
       <body>
         <ThemeProvider>
           <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
