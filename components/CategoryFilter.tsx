@@ -1,6 +1,13 @@
 'use client'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 
+const dateRanges = [
+  { value: 'all',   label: 'All time' },
+  { value: 'today', label: 'Today' },
+  { value: 'week',  label: 'Last 7 days' },
+  { value: 'month', label: 'Last 30 days' },
+]
+
 const categories = [
   { value: 'all', label: 'All' },
   { value: 'prompt', label: 'Prompts' },
@@ -36,6 +43,7 @@ export default function CategoryFilter() {
   const activeCategory = searchParams.get('category') || 'all'
   const activeDifficulty = searchParams.get('difficulty') || 'all'
   const activeTool = searchParams.get('tool') || 'all'
+  const activeDateRange = searchParams.get('date_range') || 'all'
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -48,7 +56,7 @@ export default function CategoryFilter() {
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  const hasActiveFilters = activeCategory !== 'all' || activeDifficulty !== 'all' || activeTool !== 'all'
+  const hasActiveFilters = activeCategory !== 'all' || activeDifficulty !== 'all' || activeTool !== 'all' || activeDateRange !== 'all'
 
   const activeChips: { label: string; key: string }[] = []
   if (activeCategory !== 'all') {
@@ -62,6 +70,10 @@ export default function CategoryFilter() {
   if (activeTool !== 'all') {
     const t = tools.find(t => t.value === activeTool)
     if (t) activeChips.push({ label: t.label, key: 'tool' })
+  }
+  if (activeDateRange !== 'all') {
+    const dr = dateRanges.find(d => d.value === activeDateRange)
+    if (dr) activeChips.push({ label: dr.label, key: 'date_range' })
   }
 
   function clearAll() {
@@ -125,6 +137,42 @@ export default function CategoryFilter() {
           </button>
         </div>
       )}
+
+      {/* Date range pills */}
+      <div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {dateRanges.map(dr => {
+            const active = activeDateRange === dr.value
+            return (
+              <button
+                key={dr.value}
+                onClick={() => setParam('date_range', dr.value)}
+                className="font-mono"
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  letterSpacing: '0.04em',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  border: active ? 'none' : '1px solid var(--border)',
+                  background: active ? 'rgba(6,182,212,0.15)' : 'transparent',
+                  color: active ? '#06b6d4' : 'var(--text-muted)',
+                  outline: active ? '1px solid rgba(6,182,212,0.3)' : 'none',
+                  transition: 'border-color 0.15s, background 0.15s, color 0.15s',
+                }}
+              >
+                {dr.label}
+              </button>
+            )
+          })}
+        </div>
+        {activeDateRange !== 'all' && (
+          <p style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 6, lineHeight: 1.4, fontStyle: 'italic' }}>
+            Indexed date — content may have been published earlier.
+          </p>
+        )}
+      </div>
 
       {/* Row 1: Category pills */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

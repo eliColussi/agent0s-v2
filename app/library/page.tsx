@@ -3,7 +3,7 @@ import LibraryCard from '@/components/LibraryCard'
 import SearchBar from '@/components/SearchBar'
 import CategoryFilter from '@/components/CategoryFilter'
 import { Suspense } from 'react'
-import { Category, Tool, Difficulty, LibraryItem } from '@/types'
+import { Category, Tool, Difficulty, DateRange, LibraryItem } from '@/types'
 import Link from 'next/link'
 
 export const revalidate = 3600
@@ -18,6 +18,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
   const tool = params.tool as Tool | 'all' | undefined
   const difficulty = params.difficulty as Difficulty | 'all' | undefined
   const search = params.search as string | undefined
+  const date_range = params.date_range as DateRange | 'all' | undefined
   const page = parseInt((params.page as string) || '1')
 
   let items: LibraryItem[] = []
@@ -27,7 +28,7 @@ export default async function LibraryPage({ searchParams }: PageProps) {
 
   try {
     const [result, stats] = await Promise.all([
-      getLibraryItems({ category, tool, difficulty, search, page, limit: 12 }),
+      getLibraryItems({ category, tool, difficulty, search, date_range, page, limit: 12 }),
       getStats(),
     ])
     items = result.items

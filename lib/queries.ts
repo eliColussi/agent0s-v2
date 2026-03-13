@@ -1,5 +1,21 @@
 import { supabase } from './supabase'
-import { LibraryItem, DailyDigest, LibraryFilters } from '@/types'
+import { LibraryItem, DailyDigest, LibraryFilters, DateRange } from '@/types'
+
+function dateRangeStart(range: DateRange): string {
+  const now = new Date()
+  if (range === 'today') {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+  }
+  if (range === 'week') {
+    const d = new Date(now)
+    d.setDate(d.getDate() - 7)
+    return d.toISOString()
+  }
+  // month
+  const d = new Date(now)
+  d.setDate(d.getDate() - 30)
+  return d.toISOString()
+}
 
 /** Columns safe to return to the client (excludes raw_content) */
 const PUBLIC_COLUMNS = 'id, title, category, tool, difficulty, quality_score, ai_summary, ai_actionable_steps, ai_project_ideas, ai_business_use_cases, code_snippet, tags, source_url, source_type, is_featured, github_stars, upvotes, version_label, is_version_update, supersedes_id, created_at, scraped_at'
@@ -10,7 +26,7 @@ function escapeLike(s: string): string {
 }
 
 export async function getLibraryItems(filters: LibraryFilters = {}) {
-  const { category, tool, difficulty, search, page = 1, limit = 12 } = filters
+  const { category, tool, difficulty, search, date_range, page = 1, limit = 12 } = filters
   const offset = (page - 1) * limit
 
   let query = supabase
@@ -23,6 +39,7 @@ export async function getLibraryItems(filters: LibraryFilters = {}) {
   if (tool && tool !== 'all') query = query.eq('tool', tool)
   if (difficulty && difficulty !== 'all') query = query.eq('difficulty', difficulty)
   if (search) query = query.ilike('title', `%${escapeLike(search)}%`)
+  if (date_range && date_range !== 'all') query = query.gte('created_at', dateRangeStart(date_range))
 
   query = query.range(offset, offset + limit - 1)
 

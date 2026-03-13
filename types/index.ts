@@ -45,11 +45,14 @@ export interface ScrapeLog {
   error_message: string | null
 }
 
+export type DateRange = 'today' | 'week' | 'month'
+
 export interface LibraryFilters {
   category?: Category | 'all'
   tool?: Tool | 'all'
   difficulty?: Difficulty | 'all'
   search?: string
+  date_range?: DateRange | 'all'
   page?: number
   limit?: number
 }
