@@ -2,6 +2,28 @@
 
 ## Changelog
 
+### [2026-03-13] — Hero "Today's Top Pick" + fix featured items bug
+
+**Commit:** (see below)
+
+#### Problem
+- Hero section showed stale content from yesterday — no logic to surface today's best item
+- `getFeaturedItems()` result was fetched but silently discarded (never assigned to `featuredItems`), so the right-side preview grid was always empty for real data
+
+#### Changes
+| File | What changed |
+|------|-------------|
+| `lib/queries.ts` | Added `getTodaysHeroItem()` — fetches highest `quality_score` item created today (UTC), with `quality_score >= 7` filter |
+| `app/page.tsx` | Fetches hero item in parallel with digest + recent items; fixed `getFeaturedItems` result actually being used; passes `heroItem` to `DailyDigest` |
+| `components/DailyDigest.tsx` | New "TODAY'S TOP PICK" spotlight card on right side of hero — shows category badge, title, AI summary (3-line clamp), and explore link. Falls back to featured items grid when no today item exists |
+
+#### Also done
+- Manual Trigger.dev pipeline run for March 13 (run ID: `run_cmmp766w159bu0in5pbqc1ah8`)
+- 13 new items saved, 67 rejected — today's hero: "Agents Towards Production: An Open-Source Playbook" (quality_score: 9)
+- Cron schedule unaffected — tomorrow's 7am PST run proceeds as normal
+
+---
+
 ### [2026-03-12] — Add `model` category + fix classification logic
 
 **Commit:** (see below)
@@ -80,6 +102,10 @@ The `category` column is `TEXT NOT NULL` with no CHECK constraint. New category 
 
 ## Checklist
 
+- [x] Hero always shows today's top-scored item ("Today's Top Pick" card)
+- [x] Fixed `getFeaturedItems()` result being discarded
+- [x] Manual March 13 scrape completed (13 items)
+- [x] TypeScript build clean
 - [x] `'model'` category added across all 8 touchpoints
 - [x] TypeScript build clean (`npx tsc --noEmit`)
 - [x] Enrichment prompt updated with classification decision tree

@@ -113,6 +113,21 @@ export async function getAgenticItems(filters: {
   return { items: (data as LibraryItem[]) || [], total: count || 0 }
 }
 
+export async function getTodaysHeroItem() {
+  const today = new Date().toISOString().split('T')[0]
+  const { data, error } = await supabase
+    .from('library_items')
+    .select(PUBLIC_COLUMNS)
+    .gte('created_at', `${today}T00:00:00`)
+    .lt('created_at', `${today}T23:59:59.999`)
+    .gte('quality_score', 7)
+    .order('quality_score', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (error) throw error
+  return (data?.[0] as LibraryItem) ?? null
+}
+
 export async function getStats() {
   const { count: total } = await supabase
     .from('library_items')

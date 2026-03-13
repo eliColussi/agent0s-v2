@@ -1,4 +1,4 @@
-import { getDailyDigest, getFeaturedItems, getRecentItems } from '@/lib/queries'
+import { getDailyDigest, getFeaturedItems, getRecentItems, getTodaysHeroItem } from '@/lib/queries'
 import DailyDigest from '@/components/DailyDigest'
 import LibraryCard from '@/components/LibraryCard'
 import CategoryTiles from '@/components/CategoryTiles'
@@ -21,16 +21,20 @@ const categoryMeta = [
 export default async function HomePage() {
   let digest = null
   let recentItems: import('@/types').LibraryItem[] = []
+  let heroItem: import('@/types').LibraryItem | null = null
+  let featuredItems: import('@/types').LibraryItem[] = []
 
   try {
-    const [d, r] = await Promise.all([
+    const [d, r, hero] = await Promise.all([
       getDailyDigest().catch(() => null),
       getRecentItems(6).catch(() => []),
+      getTodaysHeroItem().catch(() => null),
     ])
     digest = d
     recentItems = r
+    heroItem = hero
     if (digest?.featured_item_ids?.length) {
-      await getFeaturedItems(digest.featured_item_ids).catch(() => [])
+      featuredItems = await getFeaturedItems(digest.featured_item_ids).catch(() => [])
     }
   } catch {
     // fall through
@@ -39,9 +43,9 @@ export default async function HomePage() {
   const useSeed = !digest && recentItems.length === 0
   const displayDigest = digest ?? SEED_DIGEST
   const displayItems = recentItems.length > 0 ? recentItems : SEED_ITEMS.slice(0, 6)
-  const featuredItems = useSeed
-    ? SEED_ITEMS.filter(i => SEED_DIGEST.featured_item_ids.includes(i.id)).slice(0, 4)
-    : []
+  if (useSeed) {
+    featuredItems = SEED_ITEMS.filter(i => SEED_DIGEST.featured_item_ids.includes(i.id)).slice(0, 4)
+  }
 
   const tiles = categoryMeta.map(cat => ({
     ...cat,
@@ -118,7 +122,7 @@ export default async function HomePage() {
 
       {/* Daily Digest hero */}
       <section style={{ marginBottom: 56 }}>
-        <DailyDigest digest={displayDigest} featuredItems={featuredItems} />
+        <DailyDigest digest={displayDigest} featuredItems={featuredItems} heroItem={heroItem} />
       </section>
 
       {/* Section divider */}

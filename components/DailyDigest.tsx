@@ -1,12 +1,14 @@
 import { DailyDigest as DigestType, LibraryItem } from '@/types'
 import { SEED_STATS } from '@/lib/seed-data'
+import Link from 'next/link'
 
 interface Props {
   digest: DigestType | null
   featuredItems: LibraryItem[]
+  heroItem?: LibraryItem | null
 }
 
-export default function DailyDigest({ digest, featuredItems }: Props) {
+export default function DailyDigest({ digest, featuredItems, heroItem }: Props) {
   const dateStr = digest?.date
     ? new Date(digest.date + 'T12:00:00').toLocaleDateString('en-US', {
         weekday: 'long',
@@ -154,8 +156,123 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
           </div>
         </div>
 
-        {/* Right side — decorative grid of featured item previews */}
-        {featuredItems.length > 0 && (
+        {/* Right side — hero spotlight or featured grid */}
+        {heroItem ? (
+          <Link
+            href={`/library/${heroItem.id}`}
+            className="card-enter"
+            style={{
+              flex: '2 1 260px',
+              maxWidth: 380,
+              textDecoration: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0,
+            }}
+          >
+            <div
+              style={{
+                background: 'var(--surface-raised)',
+                border: '1px solid var(--border)',
+                borderRadius: 14,
+                borderLeft: `4px solid var(--cat-${heroItem.category})`,
+                padding: '24px 22px',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Glow accent */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -40,
+                  right: -40,
+                  width: 160,
+                  height: 160,
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle, color-mix(in srgb, var(--cat-${heroItem.category}) 12%, transparent) 0%, transparent 70%)`,
+                  pointerEvents: 'none',
+                }}
+              />
+
+              <div
+                className="font-mono"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: '0.12em',
+                  color: 'var(--accent)',
+                  marginBottom: 6,
+                  textTransform: 'uppercase',
+                }}
+              >
+                TODAY&apos;S TOP PICK
+              </div>
+
+              <div
+                className="font-mono"
+                style={{
+                  display: 'inline-block',
+                  fontSize: 10,
+                  letterSpacing: '0.08em',
+                  color: `var(--cat-${heroItem.category})`,
+                  background: `color-mix(in srgb, var(--cat-${heroItem.category}) 12%, transparent)`,
+                  padding: '3px 8px',
+                  borderRadius: 4,
+                  marginBottom: 12,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {heroItem.category}
+              </div>
+
+              <div
+                className="font-syne"
+                style={{
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.3,
+                  marginBottom: 10,
+                }}
+              >
+                {heroItem.title}
+              </div>
+
+              {heroItem.ai_summary && (
+                <p
+                  style={{
+                    fontSize: 13,
+                    lineHeight: 1.55,
+                    color: 'var(--text-muted)',
+                    marginBottom: 14,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {heroItem.ai_summary}
+                </p>
+              )}
+
+              <div
+                className="font-mono"
+                style={{
+                  fontSize: 11,
+                  color: 'var(--accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                EXPLORE
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </Link>
+        ) : featuredItems.length > 0 ? (
           <div
             style={{
               flex: '2 1 220px',
@@ -203,7 +320,7 @@ export default function DailyDigest({ digest, featuredItems }: Props) {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
