@@ -128,6 +128,19 @@ export async function getTodaysHeroItem() {
   return (data?.[0] as LibraryItem) ?? null
 }
 
+export async function getCategoryCounts(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from('library_items')
+    .select('category')
+    .gte('quality_score', 7)
+  if (error) throw error
+  const counts: Record<string, number> = {}
+  for (const row of (data as { category: string }[] || [])) {
+    counts[row.category] = (counts[row.category] || 0) + 1
+  }
+  return counts
+}
+
 export async function getStats() {
   const { count: total } = await supabase
     .from('library_items')

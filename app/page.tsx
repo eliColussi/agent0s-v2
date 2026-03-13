@@ -1,4 +1,4 @@
-import { getDailyDigest, getFeaturedItems, getRecentItems, getTodaysHeroItem } from '@/lib/queries'
+import { getDailyDigest, getFeaturedItems, getRecentItems, getTodaysHeroItem, getCategoryCounts, getStats } from '@/lib/queries'
 import DailyDigest from '@/components/DailyDigest'
 import LibraryCard from '@/components/LibraryCard'
 import CategoryTiles from '@/components/CategoryTiles'
@@ -23,16 +23,22 @@ export default async function HomePage() {
   let recentItems: import('@/types').LibraryItem[] = []
   let heroItem: import('@/types').LibraryItem | null = null
   let featuredItems: import('@/types').LibraryItem[] = []
+  let categoryCounts: Record<string, number> = {}
+  let totalItems = 0
 
   try {
-    const [d, r, hero] = await Promise.all([
+    const [d, r, hero, counts, stats] = await Promise.all([
       getDailyDigest().catch(() => null),
       getRecentItems(6).catch(() => []),
       getTodaysHeroItem().catch(() => null),
+      getCategoryCounts().catch(() => ({})),
+      getStats().catch(() => ({ total: 0 })),
     ])
     digest = d
     recentItems = r
     heroItem = hero
+    categoryCounts = counts
+    totalItems = stats.total
     if (digest?.featured_item_ids?.length) {
       featuredItems = await getFeaturedItems(digest.featured_item_ids).catch(() => [])
     }
@@ -47,9 +53,12 @@ export default async function HomePage() {
     featuredItems = SEED_ITEMS.filter(i => SEED_DIGEST.featured_item_ids.includes(i.id)).slice(0, 4)
   }
 
+  const AGENTIC_CATS = ['skill', 'hook', 'prompt', 'plugin']
   const tiles = categoryMeta.map(cat => ({
     ...cat,
-    count: SEED_ITEMS.filter(i => i.category === cat.value).length,
+    count: cat.value === 'agentic'
+      ? AGENTIC_CATS.reduce((sum, c) => sum + (categoryCounts[c] || 0), 0)
+      : categoryCounts[cat.value] || 0,
   }))
 
   return (
@@ -86,13 +95,13 @@ export default async function HomePage() {
                 <span style={{ color: 'var(--accent-green)' }}>OPERATIONAL</span>
               </span>
               <span>·</span>
-              <span>{SEED_STATS.total} items indexed</span>
+              <span>{totalItems || SEED_STATS.total} items indexed</span>
               <span>·</span>
               <span>Last sync: 7:00 AM PST</span>
               <span>·</span>
               <span>Next sync: Tomorrow 7:00 AM PST</span>
               <span>·</span>
-              <span>{SEED_STATS.sources} sources active</span>
+              <span>2 sources active</span>
             </span>
           ))}
         </div>
@@ -122,7 +131,7 @@ export default async function HomePage() {
 
       {/* Daily Digest hero */}
       <section style={{ marginBottom: 56 }}>
-        <DailyDigest digest={displayDigest} featuredItems={featuredItems} heroItem={heroItem} />
+        <DailyDigest digest={displayDigest} featuredItems={featuredItems} heroItem={heroItem} totalItems={totalItems} />
       </section>
 
       {/* Section divider */}

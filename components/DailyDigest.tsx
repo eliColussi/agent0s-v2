@@ -6,9 +6,10 @@ interface Props {
   digest: DigestType | null
   featuredItems: LibraryItem[]
   heroItem?: LibraryItem | null
+  totalItems?: number
 }
 
-export default function DailyDigest({ digest, featuredItems, heroItem }: Props) {
+export default function DailyDigest({ digest, featuredItems, heroItem, totalItems }: Props) {
   const dateStr = digest?.date
     ? new Date(digest.date + 'T12:00:00').toLocaleDateString('en-US', {
         weekday: 'long',
@@ -125,8 +126,8 @@ export default function DailyDigest({ digest, featuredItems, heroItem }: Props) 
           >
             {[
               { label: 'NEW TODAY', value: `${digest?.total_new_items ?? SEED_STATS.today}` },
-              { label: 'TOTAL', value: SEED_STATS.total.toLocaleString() },
-              { label: 'SOURCES', value: `${SEED_STATS.sources}` },
+              { label: 'TOTAL', value: (totalItems || SEED_STATS.total).toLocaleString() },
+              { label: 'SOURCES', value: '2' },
             ].map(stat => (
               <div key={stat.label} style={{ flexShrink: 0 }}>
                 <div
