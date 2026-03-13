@@ -14,7 +14,7 @@ interface Item {
 
 /** Does this category typically require AI provider API access? */
 function needsAIProvider(category: string): boolean {
-  return ['technique', 'workflow', 'niche-use-case'].includes(category)
+  return ['technique', 'workflow', 'niche-use-case', 'model'].includes(category)
 }
 
 /** Derive header verb based on category */
@@ -27,6 +27,7 @@ function headerVerb(category: string): string {
     case 'technique': return 'Apply Technique'
     case 'workflow': return 'Set Up Workflow'
     case 'niche-use-case': return 'Implement Use Case'
+    case 'model': return 'Evaluate Model'
     default: return 'Set Up'
   }
 }
@@ -57,47 +58,60 @@ function buildPrompt(item: Item): string {
   }
 
   // ── Workspace analysis ──
-  lines.push('## Before You Start')
-  lines.push('')
-  lines.push('Scan my workspace and analyze:')
-  lines.push('- The project language, framework, and directory structure')
-
-  if (wantsProvider) {
+  if (item.category === 'model') {
+    lines.push('## Before You Start')
+    lines.push('')
+    lines.push('Scan my workspace and analyze:')
+    lines.push('- The project language, framework, and current AI integrations')
     lines.push('- Existing AI provider config (check .env, .env.local, config files for API keys — OpenRouter, OpenAI, Anthropic, Google AI, etc.)')
-  }
-
-  if (isAgentic) {
-    lines.push('- Existing agent configuration (check for .claude/, .codex/, CLAUDE.md, settings.json, commands/, skills/ directories)')
-  }
-
-  if (isRepoUrl) {
-    lines.push('- Whether this repository or a similar tool is already cloned or installed')
-  }
-
-  lines.push('')
-  lines.push('Then ask me before proceeding:')
-
-  // Category-aware questions
-  if (wantsProvider) {
-    lines.push('1. Which AI provider/API should this use? (Use whatever I already have configured, or ask me to set one up — options include direct provider APIs or a unified service like OpenRouter)')
-  }
-
-  const qNum = wantsProvider ? 2 : 1
-  if (item.category === 'hook') {
-    lines.push(`${qNum}. Which lifecycle event should this hook fire on? (PreToolUse, PostToolUse, Notification, etc.)`)
-    lines.push(`${qNum + 1}. Are there any files, patterns, or tools this should be scoped to?`)
-  } else if (item.category === 'plugin') {
-    lines.push(`${qNum}. Do I need to configure any service credentials for this plugin (database, API keys, etc.)?`)
-    lines.push(`${qNum + 1}. Should this be project-scoped or global?`)
-  } else if (item.category === 'skill') {
-    lines.push(`${qNum}. Where should this skill be installed — project-level (.claude/skills/) or globally?`)
-    lines.push(`${qNum + 1}. Any customizations needed (trigger conditions, naming, etc.)?`)
-  } else if (item.category === 'prompt') {
-    lines.push(`${qNum}. Should this be a slash command (.claude/commands/*.md) or added to CLAUDE.md as persistent context?`)
-    lines.push(`${qNum + 1}. Any project-specific values I should customize in the prompt?`)
+    lines.push('- Which AI models I currently use and for what purposes')
+    lines.push('')
+    lines.push('Then ask me before proceeding:')
+    lines.push('1. Am I interested in evaluating this model for my project, or just want a summary of what it offers?')
+    lines.push('2. If I want to try it — which part of my current AI stack should it replace or complement?')
   } else {
-    lines.push(`${qNum}. Where in my project should this be integrated?`)
-    lines.push(`${qNum + 1}. Are there any customizations I need (model preferences, naming conventions, constraints)?`)
+    lines.push('## Before You Start')
+    lines.push('')
+    lines.push('Scan my workspace and analyze:')
+    lines.push('- The project language, framework, and directory structure')
+
+    if (wantsProvider) {
+      lines.push('- Existing AI provider config (check .env, .env.local, config files for API keys — OpenRouter, OpenAI, Anthropic, Google AI, etc.)')
+    }
+
+    if (isAgentic) {
+      lines.push('- Existing agent configuration (check for .claude/, .codex/, CLAUDE.md, settings.json, commands/, skills/ directories)')
+    }
+
+    if (isRepoUrl) {
+      lines.push('- Whether this repository or a similar tool is already cloned or installed')
+    }
+
+    lines.push('')
+    lines.push('Then ask me before proceeding:')
+
+    // Category-aware questions
+    if (wantsProvider) {
+      lines.push('1. Which AI provider/API should this use? (Use whatever I already have configured, or ask me to set one up — options include direct provider APIs or a unified service like OpenRouter)')
+    }
+
+    const qNum = wantsProvider ? 2 : 1
+    if (item.category === 'hook') {
+      lines.push(`${qNum}. Which lifecycle event should this hook fire on? (PreToolUse, PostToolUse, Notification, etc.)`)
+      lines.push(`${qNum + 1}. Are there any files, patterns, or tools this should be scoped to?`)
+    } else if (item.category === 'plugin') {
+      lines.push(`${qNum}. Do I need to configure any service credentials for this plugin (database, API keys, etc.)?`)
+      lines.push(`${qNum + 1}. Should this be project-scoped or global?`)
+    } else if (item.category === 'skill') {
+      lines.push(`${qNum}. Where should this skill be installed — project-level (.claude/skills/) or globally?`)
+      lines.push(`${qNum + 1}. Any customizations needed (trigger conditions, naming, etc.)?`)
+    } else if (item.category === 'prompt') {
+      lines.push(`${qNum}. Should this be a slash command (.claude/commands/*.md) or added to CLAUDE.md as persistent context?`)
+      lines.push(`${qNum + 1}. Any project-specific values I should customize in the prompt?`)
+    } else {
+      lines.push(`${qNum}. Where in my project should this be integrated?`)
+      lines.push(`${qNum + 1}. Are there any customizations I need (model preferences, naming conventions, constraints)?`)
+    }
   }
 
   lines.push('')
@@ -178,6 +192,14 @@ function buildPrompt(item: Item): string {
     lines.push('- For local parts: implement them using my existing stack and API keys')
     lines.push('- For external parts: tell me exactly what services I need and help me configure the integration code')
     lines.push('- Wire up any required API calls using keys from my .env files')
+  } else if (item.category === 'model') {
+    lines.push('This is a **New AI Model** — a model release, update, or capability announcement.')
+    lines.push('')
+    lines.push('- Analyze the best use cases for this model within my project and current AI stack')
+    lines.push('- Compare its strengths, pricing, and context window against whatever I currently use')
+    lines.push('- Give me a clear, convincing argument for why this model would (or would not) be a good fit for my project')
+    lines.push('- If I want to try it: update my API configuration (provider, model ID, any new parameters) to point to this model')
+    lines.push('- If it requires a new API key or provider signup, tell me exactly what to do')
   }
 
   lines.push('')

@@ -15,6 +15,7 @@ const categoryColor: Record<string, string> = {
   technique:        'var(--cat-technique)',
   workflow:         'var(--cat-workflow)',
   'niche-use-case': 'var(--cat-niche-use-case)',
+  model:            'var(--cat-model)',
 }
 
 const difficultyColor: Record<string, string> = {

@@ -10,6 +10,7 @@ const categories = [
   { value: 'technique', label: 'Techniques' },
   { value: 'workflow', label: 'Workflows' },
   { value: 'niche-use-case', label: 'Niche Uses' },
+  { value: 'model', label: 'Models' },
 ]
 
 const difficulties = [

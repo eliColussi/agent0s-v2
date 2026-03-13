@@ -1,4 +1,4 @@
-export type Category = 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow' | 'niche-use-case'
+export type Category = 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow' | 'niche-use-case' | 'model'
 export type Tool = 'claude-code' | 'chatgpt-codex' | 'openclaw' | 'general'
 export type Difficulty = 'beginner' | 'intermediate' | 'advanced'
 export type SourceType = 'github' | 'web' | 'reddit'

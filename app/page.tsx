@@ -15,6 +15,7 @@ const categoryMeta = [
   { value: 'workflow',       label: 'Workflows',     color: 'var(--cat-workflow)',       href: '/library?category=workflow' },
   { value: 'niche-use-case', label: 'Niche Uses',    color: 'var(--cat-niche-use-case)', href: '/library?category=niche-use-case' },
   { value: 'plugin',         label: 'Plugins',       color: 'var(--cat-plugin)',         href: '/agentic?sub=plugin' },
+  { value: 'model',          label: 'Models',        color: 'var(--cat-model)',          href: '/library?category=model' },
 ]
 
 export default async function HomePage() {

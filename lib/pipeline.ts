@@ -29,7 +29,7 @@ interface TriageResult {
 
 interface EnrichResult {
   title: string
-  category: 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow' | 'niche-use-case'
+  category: 'prompt' | 'skill' | 'hook' | 'plugin' | 'technique' | 'workflow' | 'niche-use-case' | 'model'
   tool: 'claude-code' | 'chatgpt-codex' | 'openclaw' | 'general'
   difficulty: 'beginner' | 'intermediate' | 'advanced'
   quality_score: number
@@ -55,7 +55,7 @@ const ENRICH_SCHEMA = {
   type: 'object',
   properties: {
     title: { type: 'string' },
-    category: { type: 'string', enum: ['prompt', 'skill', 'hook', 'plugin', 'technique', 'workflow', 'niche-use-case'] },
+    category: { type: 'string', enum: ['prompt', 'skill', 'hook', 'plugin', 'technique', 'workflow', 'niche-use-case', 'model'] },
     tool: { type: 'string', enum: ['claude-code', 'chatgpt-codex', 'openclaw', 'general'] },
     difficulty: { type: 'string', enum: ['beginner', 'intermediate', 'advanced'] },
     quality_score: { type: 'number' },
@@ -391,7 +391,7 @@ async function logRun(
 
 const TRIAGE_SYSTEM_PROMPT = `You are a senior content curator for an AI tools intelligence library.
 Your readers are business owners and developers who want immediately actionable AI tool knowledge.
-Core coverage areas: Claude Code, OpenAI Codex CLI, OpenCLAW framework, and agentic AI tooling in general.
+Core coverage areas: Claude Code, OpenAI Codex CLI, OpenCLAW framework, agentic AI tooling in general, and NEW AI MODEL releases (Gemini, Claude, GPT, Llama, etc.).
 We also cover niche/unconventional use cases — real-world applications of AI coding agents in specific industries or creative scenarios.
 Be strict — most content should be discarded. Only pass items that are genuinely novel, specific, and useful.
 Respond only in valid JSON.`
@@ -430,7 +430,7 @@ Score this item and respond in JSON:
 }
 
 Rules:
-- "discard" if average score < 5, is_duplicate, or not about AI tools/prompts/workflows/niche use cases
+- "discard" if average score < 5, is_duplicate, or not about AI tools/prompts/workflows/model releases/niche use cases
 - "deep_research" if it's a GitHub repo that needs full README content to evaluate properly
 - "enrich" if it clearly has good content from the context alone
 - is_version_update = true only if this is explicitly a newer version of an existing library item`
@@ -446,15 +446,31 @@ TOOL ASSIGNMENT:
 - tool: "openclaw" — content specifically about the OpenCLAW agentic AI framework
 - tool: "general" — content applicable to multiple tools or general AI techniques
 
-CATEGORY ASSIGNMENT:
-- category: "niche-use-case" — real-world applications of AI tools in specific industries, unconventional/creative uses, unique problem-solving stories, edge cases that showcase what's possible. These are concrete case studies, not generic advice.
-- Other categories: prompt, skill, hook, plugin, technique, workflow (as before)
+CATEGORY ASSIGNMENT — READ CAREFULLY. Misclassification breaks the user experience.
+Determine the PRIMARY nature of the content. Ask: "What is this ABOUT at its core?"
+
+- category: "model" — a NEW AI MODEL release, update, or announcement. Examples: "Gemini 2.5 Flash", "Claude 4 Opus", "GPT-5", "Llama 4", "Qwen 3". If the content is announcing a new model, benchmarking a model, or discussing a model's capabilities/pricing/availability, it is a MODEL. A model is NOT a skill, technique, or workflow — it is a foundational AI system that other things are built on.
+- category: "skill" — an installable Claude Code skill file (SKILL.md in .claude/skills/), a Codex CLI custom command, or equivalent auto-loaded agent capability. Must be a CONCRETE INSTALLABLE FILE, not general advice about a model.
+- category: "hook" — a lifecycle automation trigger (pre-commit, post-save, etc.) configured in agent settings. Must describe a specific hook configuration.
+- category: "plugin" — an MCP server, extension package, or tool integration that adds capabilities to an AI coding agent.
+- category: "prompt" — a reusable prompt template, slash command, or system instruction. Must be a concrete prompt you can copy-paste.
+- category: "technique" — a pattern, methodology, or strategy for working with AI models (chain-of-thought, structured output, etc.). NOT a model release.
+- category: "workflow" — an end-to-end multi-step automation pipeline or orchestration pattern.
+- category: "niche-use-case" — real-world applications of AI tools in specific industries, unconventional/creative uses, unique problem-solving stories.
+
+CLASSIFICATION RULES (critical — wrong categories destroy user trust):
+1. If the content announces or reviews a NEW MODEL (any provider) → "model". Period.
+2. If the content is a tutorial about USING a model's features → "technique" (not "model")
+3. If the content is a specific installable file (.md, .json config) → match to skill/hook/plugin/prompt
+4. If the content mixes topics (e.g. "use this new model as a skill"), pick the PRIMARY nature
+5. When in doubt between "model" and something else: if the headline is about the model itself → "model"
 
 CRITICAL: The "ai_actionable_steps" you write will be embedded in prompts that users paste into their AI coding agent.
 These steps must be written FOR AN AI AGENT TO EXECUTE, not for a human to follow manually.
+- For MODEL category: write steps like "Analyze the best use cases for this model within the user's project", "Compare this model's strengths against the user's current provider", "If the user wants to try it, update the API configuration to point to this model"
+- For other categories: "Clone the repository", "Add this config block to settings.json", "Install the npm package and configure the API client"
 - Do NOT write steps like "Go to the website and click..." or "Open Google Studio and select..."
-- DO write steps that an AI coding agent can act on: "Clone the repository", "Add this config block to settings.json", "Install the npm package and configure the API client"
-- If the tool requires an API key (OpenAI, Anthropic, Google AI, OpenRouter, etc.), say "Configure the API client using the user's existing provider key from their .env file, or prompt them to add one"
+- If the tool requires an API key, say "Configure the API client using the user's existing provider key from their .env file, or prompt them to add one"
 - Always assume the agent will scan the user's workspace first and adapt to their existing setup
 - Each step should start with an imperative verb and be completable programmatically`
 
