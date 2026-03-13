@@ -153,6 +153,17 @@ export class DedupRegistry {
     if (ghCanon) this.githubRepos.add(ghCanon)
   }
 
+  /** Bulk-load titles without fuzzy matching (for initial DB load, not dedup) */
+  loadTitles(titles: string[]) {
+    const existing = new Set(this.titles)
+    for (const t of titles) {
+      if (t && !existing.has(t)) {
+        this.titles.push(t)
+        existing.add(t)
+      }
+    }
+  }
+
   /** Check if a URL is already known (includes GitHub repo canonicalization) */
   hasUrl(url: string): boolean {
     if (this.urls.has(normalizeUrl(url))) return true

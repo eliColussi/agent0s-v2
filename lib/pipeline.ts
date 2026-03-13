@@ -121,18 +121,15 @@ export async function runScrapeAndProcess() {
 
     // Load content items first (includes URL + title + fingerprint)
     dedup.loadExisting(recentContent)
-    // Load remaining URLs and titles not covered by content fetch
+    // Load remaining URLs not covered by content fetch
     const existingItems = allTitles
     for (const r of allUrls) {
       if (!dedup.hasUrl(r.source_url)) {
         dedup.register(r.source_url, '', undefined)
       }
     }
-    for (const r of allTitles) {
-      if (!dedup.matchesTitle(r.title)) {
-        dedup.register('', r.title, undefined)
-      }
-    }
+    // Load all titles directly (no fuzzy check — we're building the registry, not deduping)
+    dedup.loadTitles(allTitles.map(r => r.title))
     console.log(`  Dedup registry loaded: ${dedup.urlCount} URLs, ${dedup.titleCount} titles, fingerprints for recent ${recentContent.length} items`)
 
     // ── STAGE 1: Discovery ────────────────────────────────────────────────────
@@ -224,7 +221,7 @@ export async function runScrapeAndProcess() {
 
     // ── STAGE 4: Enrichment ───────────────────────────────────────────────────
     console.log('Stage 4: Enrichment...')
-    const enriched = await batchAsync(afterDeepResearchDedup, 5, async (item) => {
+    const enriched = await batchAsync(afterDeepResearchDedup, 8, async (item) => {
       const result = await callSchema<EnrichResult>({
         model: MODELS.enrich,
         fallback: MODELS.enrich_fallback,

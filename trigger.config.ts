@@ -4,6 +4,6 @@ export default defineConfig({
   project: 'proj_gqgnwnsfgetmdramgfme',
   runtime: 'node',
   logLevel: 'log',
-  maxDuration: 300,
+  maxDuration: 600,
   dirs: ['./trigger'],
 })
