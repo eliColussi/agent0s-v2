@@ -2,6 +2,33 @@
 
 ## Changelog
 
+### [2026-03-13] — Experimental "Liquid Glass" UI/UX overhaul
+
+**Commit:** (see below) · **Rollback point:** `92e0fa5`
+
+#### Goal
+Replace the flat dark UI with a glassmorphism "Liquid Glass" design system — semi-transparent surfaces, backdrop-filter blur, ambient gradient orbs, and an editorial magazine layout for the Mission Briefing. Add an Agent Intelligence Feed as a live scrolling dashboard.
+
+#### Changes (8 files, +791 / -327 lines)
+| File | What changed |
+|------|-------------|
+| `app/globals.css` | Full design system: semi-transparent `--surface` / `--surface-raised`, `--surface-glass`, `--border-glass`, `--glass-blur` vars. Ambient gradient orbs (purple, cyan, gold) over dot grid. Glass utility classes (`.glass`, `.glass-heavy`, `.glass-subtle`, `.glass-nav`). `.glass-border-glow` gradient mask border. `.section-divider`, `.gradient-text`, `.float`, `.feed-scroll` utilities. Enhanced card hover with accent glow. Light theme vars updated. |
+| `components/Nav.tsx` | `glass-nav` class, gradient logo with glow, pill-style LIVE indicator, glass mobile drawer with backdrop blur |
+| `components/LibraryCard.tsx` | `glass-border-glow` class, semi-transparent background with backdrop blur, `color-mix()` category badges, glass tool pills |
+| `components/DailyDigest.tsx` | Editorial magazine layout: `glass-heavy` container, split panel (editorial left + hero spotlight right), ambient glow orbs, stats separated by glass dividers, category-colored accents, pulsing live indicator on hero card |
+| `app/page.tsx` | `gradient-text` title, `section-divider` transitions, new Agent Intelligence Feed (scrolling live dashboard with `feed-scroll` animation, fade gradients, LIVE badge) in two-column layout alongside category grid |
+| `components/CategoryTiles.tsx` | `glass-border-glow` cards, backdrop blur, category-colored glow orbs, dot indicators, staggered `card-enter` animations |
+| `app/library/page.tsx` | `.glass` sidebar/filters, accent glow on stats block, glass pagination buttons, glass empty state, `gradient-text` header |
+| `app/layout.tsx` | Glass footer with backdrop blur, gradient logo mark, live pulse indicator |
+
+#### Notes
+- This is experimental — may be reverted to `92e0fa5` if the user doesn't like it
+- No new dependencies added
+- TypeScript build clean (`npx tsc --noEmit`)
+- 3D agent visualization deliberately skipped for now
+
+---
+
 ### [2026-03-13] — Discovery overhaul: dedicated queries per tool + triage rebalancing
 
 **Commit:** (see below)

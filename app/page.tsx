@@ -18,6 +18,17 @@ const categoryMeta = [
   { value: 'model',          label: 'Models',        color: 'var(--cat-model)',          href: '/library?category=model' },
 ]
 
+const FEED_EVENTS = [
+  { icon: '◆', color: 'var(--cat-skill)', text: 'New Claude Code skill indexed', time: '2m ago' },
+  { icon: '●', color: 'var(--accent-green)', text: 'Daily pipeline completed', time: '7:02 AM' },
+  { icon: '▲', color: 'var(--cat-model)', text: 'Model release detected', time: '6:45 AM' },
+  { icon: '◇', color: 'var(--cat-workflow)', text: 'Workflow pattern catalogued', time: '6:30 AM' },
+  { icon: '■', color: 'var(--cat-hook)', text: 'Hook configuration saved', time: '6:15 AM' },
+  { icon: '◆', color: 'var(--cat-technique)', text: 'Technique brief generated', time: '6:00 AM' },
+  { icon: '●', color: 'var(--accent)', text: 'Perplexity sources scanned', time: '5:58 AM' },
+  { icon: '▲', color: 'var(--cat-plugin)', text: 'Plugin integration tested', time: '5:45 AM' },
+]
+
 export default async function HomePage() {
   let digest = null
   let recentItems: import('@/types').LibraryItem[] = []
@@ -67,14 +78,14 @@ export default async function HomePage() {
       <div
         style={{
           overflow: 'hidden',
-          borderBottom: '1px solid var(--border)',
+          borderBottom: '1px solid var(--border-glass)',
           padding: '8px 0',
-          marginBottom: 32,
+          marginBottom: 36,
         }}
       >
         <div
           className="ticker-inner font-mono"
-          style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.07em' }}
+          style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.08em' }}
         >
           {[1, 2].map(n => (
             <span
@@ -84,23 +95,24 @@ export default async function HomePage() {
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <span
                   style={{
-                    width: 6,
-                    height: 6,
+                    width: 5,
+                    height: 5,
                     borderRadius: '50%',
                     background: 'var(--accent-green)',
                     display: 'inline-block',
-                    boxShadow: '0 0 5px var(--accent-green)',
+                    boxShadow: '0 0 6px var(--accent-green)',
+                    animation: 'pulse 2s ease-in-out infinite',
                   }}
                 />
                 <span style={{ color: 'var(--accent-green)' }}>OPERATIONAL</span>
               </span>
-              <span>·</span>
+              <span style={{ opacity: 0.3 }}>·</span>
               <span>{totalItems || SEED_STATS.total} items indexed</span>
-              <span>·</span>
+              <span style={{ opacity: 0.3 }}>·</span>
               <span>Last sync: 7:00 AM PST</span>
-              <span>·</span>
+              <span style={{ opacity: 0.3 }}>·</span>
               <span>Next sync: Tomorrow 7:00 AM PST</span>
-              <span>·</span>
+              <span style={{ opacity: 0.3 }}>·</span>
               <span>2 sources active</span>
             </span>
           ))}
@@ -108,15 +120,15 @@ export default async function HomePage() {
       </div>
 
       {/* Value proposition */}
-      <div style={{ marginBottom: 36 }}>
+      <div style={{ marginBottom: 40 }}>
         <h1
-          className="font-syne"
+          className="font-syne gradient-text"
           style={{
             fontWeight: 800,
-            fontSize: 'clamp(22px, 3vw, 32px)',
-            color: 'var(--text-primary)',
+            fontSize: 'clamp(24px, 3.5vw, 36px)',
             letterSpacing: '-0.02em',
-            marginBottom: 8,
+            marginBottom: 10,
+            lineHeight: 1.2,
           }}
         >
           Discover & master the latest AI coding tools
@@ -135,7 +147,7 @@ export default async function HomePage() {
       </section>
 
       {/* Section divider */}
-      <div style={{ height: 1, background: 'var(--border)', margin: '0 0 48px', opacity: 0.6 }} />
+      <div className="section-divider" style={{ marginBottom: 48 }} />
 
       {/* Recently Added */}
       <section style={{ marginBottom: 56 }}>
@@ -144,15 +156,15 @@ export default async function HomePage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: 20,
+            marginBottom: 24,
           }}
         >
           <h2
             className="font-mono"
             style={{
-              fontSize: 12,
-              letterSpacing: '0.10em',
-              color: 'var(--text-muted)',
+              fontSize: 11,
+              letterSpacing: '0.12em',
+              color: 'var(--text-dim)',
               display: 'flex',
               alignItems: 'center',
               gap: 10,
@@ -160,9 +172,9 @@ export default async function HomePage() {
           >
             <span
               style={{
-                width: 20,
+                width: 24,
                 height: 1,
-                background: 'var(--text-dim)',
+                background: 'linear-gradient(90deg, var(--accent), transparent)',
                 display: 'inline-block',
               }}
             />
@@ -172,13 +184,18 @@ export default async function HomePage() {
             href="/library"
             className="font-mono"
             style={{
-              fontSize: 12,
+              fontSize: 11,
               letterSpacing: '0.06em',
               color: 'var(--accent)',
               textDecoration: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: 4,
+              gap: 5,
+              padding: '4px 10px',
+              borderRadius: 6,
+              background: 'rgba(232,184,75,0.06)',
+              border: '1px solid rgba(232,184,75,0.1)',
+              transition: 'background 0.15s ease',
             }}
           >
             VIEW ALL
@@ -203,34 +220,137 @@ export default async function HomePage() {
       </section>
 
       {/* Section divider */}
-      <div style={{ height: 1, background: 'var(--border)', margin: '0 0 48px', opacity: 0.6 }} />
+      <div className="section-divider" style={{ marginBottom: 48 }} />
 
-      {/* Browse by Category */}
-      <section>
-        <h2
-          className="font-mono"
+      {/* Agent Intelligence Feed + Browse by Category — two-column layout */}
+      <div className="flex flex-col lg:flex-row gap-8" style={{ alignItems: 'flex-start' }}>
+        {/* Agent Intelligence Feed — left */}
+        <section
+          className="glass"
           style={{
-            fontSize: 11,
-            letterSpacing: '0.10em',
-            color: 'var(--text-muted)',
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
+            flex: '1 1 340px',
+            padding: 0,
+            overflow: 'hidden',
           }}
         >
-          <span
+          <div
             style={{
-              width: 20,
-              height: 1,
-              background: 'var(--text-dim)',
-              display: 'inline-block',
+              padding: '18px 20px 14px',
+              borderBottom: '1px solid var(--border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
-          />
-          BROWSE BY CATEGORY
-        </h2>
-        <CategoryTiles tiles={tiles} />
-      </section>
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: 'var(--accent-green)',
+                  display: 'inline-block',
+                  boxShadow: '0 0 8px var(--accent-green)',
+                  animation: 'pulse 2s ease-in-out infinite',
+                }}
+              />
+              <h2
+                className="font-mono"
+                style={{
+                  fontSize: 11,
+                  letterSpacing: '0.12em',
+                  color: 'var(--text-muted)',
+                }}
+              >
+                AGENT INTELLIGENCE FEED
+              </h2>
+            </div>
+            <span
+              className="font-mono"
+              style={{
+                fontSize: 10,
+                color: 'var(--accent-green)',
+                letterSpacing: '0.06em',
+                padding: '2px 8px',
+                borderRadius: 4,
+                background: 'rgba(0,200,150,0.06)',
+                border: '1px solid rgba(0,200,150,0.1)',
+              }}
+            >
+              LIVE
+            </span>
+          </div>
+
+          <div
+            style={{
+              height: 280,
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            {/* Fade top */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(var(--surface), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+            {/* Fade bottom */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 40, background: 'linear-gradient(transparent, var(--surface))', zIndex: 2, pointerEvents: 'none' }} />
+
+            <div className="feed-scroll" style={{ padding: '8px 0' }}>
+              {[...FEED_EVENTS, ...FEED_EVENTS].map((event, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 20px',
+                    borderBottom: '1px solid var(--border)',
+                    transition: 'background 0.15s ease',
+                  }}
+                >
+                  <span style={{ color: event.color, fontSize: 8, flexShrink: 0, filter: `drop-shadow(0 0 4px ${event.color})` }}>
+                    {event.icon}
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)', flex: 1 }}>
+                    {event.text}
+                  </span>
+                  <span
+                    className="font-mono"
+                    style={{ fontSize: 10, color: 'var(--text-dim)', flexShrink: 0 }}
+                  >
+                    {event.time}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Browse by Category — right */}
+        <section style={{ flex: '2 1 500px' }}>
+          <h2
+            className="font-mono"
+            style={{
+              fontSize: 11,
+              letterSpacing: '0.12em',
+              color: 'var(--text-dim)',
+              marginBottom: 20,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                width: 24,
+                height: 1,
+                background: 'linear-gradient(90deg, var(--accent), transparent)',
+                display: 'inline-block',
+              }}
+            />
+            BROWSE BY CATEGORY
+          </h2>
+          <CategoryTiles tiles={tiles} />
+        </section>
+      </div>
     </div>
   )
 }

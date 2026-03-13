@@ -16,15 +16,13 @@ export default function Nav() {
 
   return (
     <nav
+      className="glass-nav"
       style={{
         position: 'sticky',
         top: 0,
         zIndex: 50,
         height: 56,
-        borderBottom: '1px solid var(--border)',
-        backgroundColor: 'var(--bg)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border-glass)',
       }}
     >
       <div
@@ -45,27 +43,28 @@ export default function Nav() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
+            gap: 10,
             textDecoration: 'none',
             flexShrink: 0,
           }}
         >
           <div
             style={{
-              width: 18,
-              height: 18,
-              background: 'var(--accent)',
-              borderRadius: 3,
+              width: 20,
+              height: 20,
+              background: 'linear-gradient(135deg, var(--accent), rgba(232, 184, 75, 0.6))',
+              borderRadius: 5,
               flexShrink: 0,
+              boxShadow: '0 0 12px rgba(232, 184, 75, 0.3)',
             }}
           />
           <span
             className="font-syne"
             style={{
               fontWeight: 700,
-              fontSize: 17,
+              fontSize: 18,
               color: 'var(--text-primary)',
-              letterSpacing: '-0.02em',
+              letterSpacing: '0.04em',
             }}
           >
             AGENT0S
@@ -82,13 +81,14 @@ export default function Nav() {
                 href={link.href}
                 className={active ? 'nav-link-active' : ''}
                 style={{
-                  padding: '5px 12px',
-                  borderRadius: 6,
+                  padding: '6px 14px',
+                  borderRadius: 8,
                   fontSize: 14,
                   fontWeight: 500,
                   textDecoration: 'none',
                   color: active ? 'var(--text-primary)' : 'var(--text-muted)',
-                  transition: 'color 0.15s ease',
+                  background: active ? 'rgba(232, 184, 75, 0.06)' : 'transparent',
+                  transition: 'color 0.15s ease, background 0.15s ease',
                   position: 'relative',
                 }}
               >
@@ -100,7 +100,6 @@ export default function Nav() {
 
         {/* Right side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          {/* Learn AI CTA */}
           <a
             href="https://www.skool.com/ai-staffroom/about"
             target="_blank"
@@ -114,35 +113,38 @@ export default function Nav() {
               letterSpacing: '0.02em',
               textDecoration: 'none',
               color: '#06080f',
-              background: 'var(--accent)',
-              boxShadow: '0 0 16px rgba(232, 184, 75, 0.3), 0 1px 2px rgba(0,0,0,0.2)',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #d4a43a 100%)',
+              boxShadow: '0 0 20px rgba(232, 184, 75, 0.3), 0 2px 4px rgba(0,0,0,0.2)',
+              transition: 'transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease',
               whiteSpace: 'nowrap',
               cursor: 'pointer',
               alignItems: 'center',
               gap: 6,
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 0 24px rgba(232, 184, 75, 0.5), 0 2px 8px rgba(0,0,0,0.3)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 0 30px rgba(232, 184, 75, 0.5), 0 4px 12px rgba(0,0,0,0.3)'
             }}
             onMouseLeave={e => {
               e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 0 16px rgba(232, 184, 75, 0.3), 0 1px 2px rgba(0,0,0,0.2)'
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(232, 184, 75, 0.3), 0 2px 4px rgba(0,0,0,0.2)'
             }}
           >
             Learn AI
           </a>
 
-          {/* Live status */}
           <div
             className="hidden sm:flex font-mono"
             style={{
               alignItems: 'center',
               gap: 6,
-              fontSize: 12,
+              fontSize: 11,
               color: 'var(--text-muted)',
               letterSpacing: '0.06em',
+              padding: '4px 10px',
+              borderRadius: 6,
+              background: 'rgba(0, 200, 150, 0.06)',
+              border: '1px solid rgba(0, 200, 150, 0.1)',
             }}
           >
             <span
@@ -152,16 +154,15 @@ export default function Nav() {
                 borderRadius: '50%',
                 background: 'var(--accent-green)',
                 display: 'inline-block',
-                boxShadow: '0 0 6px var(--accent-green)',
+                boxShadow: '0 0 8px var(--accent-green)',
                 animation: 'pulse 2s ease-in-out infinite',
               }}
             />
-            <span>LIVE · 247 items</span>
+            <span style={{ color: 'var(--accent-green)' }}>LIVE</span>
           </div>
 
           <ThemeToggle />
 
-          {/* Mobile hamburger */}
           <button
             className="flex md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -170,8 +171,8 @@ export default function Nav() {
               width: 34,
               height: 34,
               borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--surface-raised)',
+              border: '1px solid var(--border-glass)',
+              background: 'var(--surface-glass)',
               color: 'var(--text-muted)',
               alignItems: 'center',
               justifyContent: 'center',
@@ -191,7 +192,6 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div
           className="mobile-menu-enter md:hidden"
@@ -201,7 +201,9 @@ export default function Nav() {
             left: 0,
             right: 0,
             background: 'var(--bg)',
-            borderBottom: '1px solid var(--border)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            borderBottom: '1px solid var(--border-glass)',
             padding: '12px 24px 16px',
             display: 'flex',
             flexDirection: 'column',

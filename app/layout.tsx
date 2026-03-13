@@ -39,14 +39,47 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main style={{ flex: 1, position: 'relative', zIndex: 1 }}>
               {children}
             </main>
-            <footer style={{ borderTop: '1px solid var(--border)', padding: '20px 24px', marginTop: 'auto' }}>
-              <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <span className="font-mono" style={{ fontSize: 13, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
-                  Agent0s · AI Intelligence Library
-                </span>
-                <span className="font-mono" style={{ fontSize: 13, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
-                  Updated daily · 7am PST
-                </span>
+            <footer
+              style={{
+                borderTop: '1px solid var(--border-glass)',
+                padding: '24px 24px',
+                marginTop: 'auto',
+                background: 'var(--surface-glass)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              }}
+            >
+              <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div
+                    style={{
+                      width: 14,
+                      height: 14,
+                      background: 'linear-gradient(135deg, var(--accent), rgba(232, 184, 75, 0.5))',
+                      borderRadius: 3,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span className="font-mono" style={{ fontSize: 12, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                    Agent0s · AI Intelligence Library
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                    Updated daily · 7am PST
+                  </span>
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: '50%',
+                      background: 'var(--accent-green)',
+                      display: 'inline-block',
+                      boxShadow: '0 0 6px var(--accent-green)',
+                      animation: 'pulse 2s ease-in-out infinite',
+                    }}
+                  />
+                </div>
               </div>
             </footer>
           </div>

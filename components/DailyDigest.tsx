@@ -2,6 +2,17 @@ import { DailyDigest as DigestType, LibraryItem } from '@/types'
 import { SEED_STATS } from '@/lib/seed-data'
 import Link from 'next/link'
 
+const categoryColor: Record<string, string> = {
+  prompt:           'var(--cat-prompt)',
+  skill:            'var(--cat-skill)',
+  hook:             'var(--cat-hook)',
+  plugin:           'var(--cat-plugin)',
+  technique:        'var(--cat-technique)',
+  workflow:         'var(--cat-workflow)',
+  'niche-use-case': 'var(--cat-niche-use-case)',
+  model:            'var(--cat-model)',
+}
+
 interface Props {
   digest: DigestType | null
   featuredItems: LibraryItem[]
@@ -29,61 +40,66 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
     digest?.intro_paragraph ??
     'The daily scraper runs at 7am PST. Once configured, new AI tools, prompts, and techniques will appear here automatically every morning.'
 
+  const heroCatColor = heroItem ? (categoryColor[heroItem.category] || 'var(--accent)') : 'var(--accent)'
+
   return (
     <div
-      className="card-enter shimmer-border-left"
+      className="card-enter glass-heavy"
       style={{
-        borderRadius: 16,
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderLeft: '4px solid transparent',
-        padding: '32px 32px 32px 28px',
-        marginBottom: 0,
+        padding: 0,
         overflow: 'hidden',
         position: 'relative',
       }}
     >
-      {/* Subtle gold glow top-left */}
+      {/* Ambient glow orbs */}
       <div
         style={{
           position: 'absolute',
-          top: -60,
-          left: -60,
-          width: 240,
-          height: 240,
+          top: -80,
+          left: -80,
+          width: 300,
+          height: 300,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(232,184,75,0.07) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(232,184,75,0.06) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: -60,
+          right: -60,
+          width: 250,
+          height: 250,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(6,182,212,0.04) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
 
-      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', position: 'relative' }}>
-        {/* Left side — 60% */}
-        <div style={{ flex: '3 1 300px', minWidth: 0 }}>
-          {/* Label */}
-          <div
-            className="font-mono"
-            style={{
-              fontSize: 12,
-              letterSpacing: '0.10em',
-              color: 'var(--accent)',
-              marginBottom: 14,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <span
+      <div style={{ display: 'flex', gap: 0, flexWrap: 'wrap', position: 'relative' }}>
+        {/* Left side — editorial content */}
+        <div style={{ flex: '3 1 340px', minWidth: 0, padding: '36px 36px 36px 32px' }}>
+          {/* Edition label */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div
+              className="font-mono"
               style={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                background: 'var(--accent)',
-                display: 'inline-block',
-                boxShadow: '0 0 6px var(--accent)',
+                fontSize: 10,
+                letterSpacing: '0.14em',
+                color: 'var(--accent)',
+                padding: '4px 12px',
+                borderRadius: 6,
+                background: 'rgba(232,184,75,0.08)',
+                border: '1px solid rgba(232,184,75,0.15)',
+                textTransform: 'uppercase',
               }}
-            />
-            MISSION BRIEFING · {dateStr.toUpperCase()}
+            >
+              Daily Briefing
+            </div>
+            <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+              {dateStr.toUpperCase()}
+            </span>
           </div>
 
           {/* Headline */}
@@ -91,11 +107,11 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
             className="font-syne"
             style={{
               fontWeight: 700,
-              fontSize: 'clamp(24px, 3.5vw, 38px)',
-              lineHeight: 1.2,
+              fontSize: 'clamp(26px, 3.5vw, 40px)',
+              lineHeight: 1.15,
               letterSpacing: '-0.02em',
               color: 'var(--text-primary)',
-              marginBottom: 16,
+              marginBottom: 18,
             }}
           >
             {headline}
@@ -104,39 +120,46 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
           {/* Intro */}
           <p
             style={{
-              fontSize: 16,
-              lineHeight: 1.65,
+              fontSize: 15,
+              lineHeight: 1.7,
               color: 'var(--text-muted)',
-              marginBottom: 28,
-              maxWidth: 560,
+              marginBottom: 32,
+              maxWidth: 540,
             }}
           >
             {intro}
           </p>
 
-          {/* Stat counters */}
+          {/* Stats row */}
           <div
             style={{
               display: 'flex',
-              gap: 28,
-              flexWrap: 'nowrap',
-              overflowX: 'auto',
-              paddingBottom: 4,
+              gap: 0,
+              borderTop: '1px solid var(--border)',
+              paddingTop: 20,
             }}
           >
             {[
               { label: 'NEW TODAY', value: `${digest?.total_new_items ?? SEED_STATS.today}` },
-              { label: 'TOTAL', value: (totalItems || SEED_STATS.total).toLocaleString() },
+              { label: 'TOTAL INDEXED', value: (totalItems || SEED_STATS.total).toLocaleString() },
               { label: 'SOURCES', value: '2' },
-            ].map(stat => (
-              <div key={stat.label} style={{ flexShrink: 0 }}>
+            ].map((stat, i) => (
+              <div
+                key={stat.label}
+                style={{
+                  flex: 1,
+                  paddingRight: 16,
+                  borderRight: i < 2 ? '1px solid var(--border)' : 'none',
+                  paddingLeft: i > 0 ? 16 : 0,
+                }}
+              >
                 <div
                   className="font-mono"
                   style={{
-                    fontSize: 11,
-                    letterSpacing: '0.10em',
-                    color: 'var(--accent)',
-                    marginBottom: 4,
+                    fontSize: 10,
+                    letterSpacing: '0.12em',
+                    color: 'var(--text-dim)',
+                    marginBottom: 6,
                   }}
                 >
                   {stat.label}
@@ -144,7 +167,7 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
                 <div
                   className="font-mono"
                   style={{
-                    fontSize: 28,
+                    fontSize: 26,
                     fontWeight: 500,
                     color: 'var(--text-primary)',
                     lineHeight: 1,
@@ -163,50 +186,68 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
             href={`/library/${heroItem.id}`}
             className="card-enter"
             style={{
-              flex: '2 1 260px',
-              maxWidth: 380,
+              flex: '2 1 280px',
+              maxWidth: 400,
               textDecoration: 'none',
               display: 'flex',
               flexDirection: 'column',
-              gap: 0,
+              borderLeft: '1px solid var(--border)',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
+            {/* Category-colored top accent */}
             <div
               style={{
-                background: 'var(--surface-raised)',
-                border: '1px solid var(--border)',
-                borderRadius: 14,
-                borderLeft: `4px solid var(--cat-${heroItem.category})`,
-                padding: '24px 22px',
-                position: 'relative',
-                overflow: 'hidden',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 3,
+                background: `linear-gradient(90deg, ${heroCatColor}, transparent)`,
               }}
-            >
-              {/* Glow accent */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: -40,
-                  right: -40,
-                  width: 160,
-                  height: 160,
-                  borderRadius: '50%',
-                  background: `radial-gradient(circle, color-mix(in srgb, var(--cat-${heroItem.category}) 12%, transparent) 0%, transparent 70%)`,
-                  pointerEvents: 'none',
-                }}
-              />
+            />
 
+            {/* Background glow */}
+            <div
+              style={{
+                position: 'absolute',
+                top: -40,
+                right: -40,
+                width: 200,
+                height: 200,
+                borderRadius: '50%',
+                background: `radial-gradient(circle, color-mix(in srgb, ${heroCatColor} 10%, transparent) 0%, transparent 70%)`,
+                pointerEvents: 'none',
+              }}
+            />
+
+            <div style={{ padding: '36px 28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div
                 className="font-mono"
                 style={{
                   fontSize: 10,
-                  letterSpacing: '0.12em',
+                  letterSpacing: '0.14em',
                   color: 'var(--accent)',
-                  marginBottom: 6,
+                  marginBottom: 14,
                   textTransform: 'uppercase',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
                 }}
               >
-                TODAY&apos;S TOP PICK
+                <span
+                  style={{
+                    width: 5,
+                    height: 5,
+                    borderRadius: '50%',
+                    background: 'var(--accent)',
+                    display: 'inline-block',
+                    boxShadow: '0 0 8px var(--accent)',
+                    animation: 'pulse 2s ease-in-out infinite',
+                  }}
+                />
+                Today&apos;s Top Pick
               </div>
 
               <div
@@ -215,12 +256,14 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
                   display: 'inline-block',
                   fontSize: 10,
                   letterSpacing: '0.08em',
-                  color: `var(--cat-${heroItem.category})`,
-                  background: `color-mix(in srgb, var(--cat-${heroItem.category}) 12%, transparent)`,
-                  padding: '3px 8px',
-                  borderRadius: 4,
-                  marginBottom: 12,
+                  color: heroCatColor,
+                  background: `color-mix(in srgb, ${heroCatColor} 10%, transparent)`,
+                  border: `1px solid color-mix(in srgb, ${heroCatColor} 20%, transparent)`,
+                  padding: '3px 10px',
+                  borderRadius: 6,
+                  marginBottom: 14,
                   textTransform: 'uppercase',
+                  width: 'fit-content',
                 }}
               >
                 {heroItem.category}
@@ -229,11 +272,11 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
               <div
                 className="font-syne"
                 style={{
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: 700,
                   color: 'var(--text-primary)',
-                  lineHeight: 1.3,
-                  marginBottom: 10,
+                  lineHeight: 1.25,
+                  marginBottom: 12,
                 }}
               >
                 {heroItem.title}
@@ -243,13 +286,14 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
                 <p
                   style={{
                     fontSize: 13,
-                    lineHeight: 1.55,
+                    lineHeight: 1.6,
                     color: 'var(--text-muted)',
-                    marginBottom: 14,
+                    marginBottom: 16,
                     display: '-webkit-box',
                     WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
+                    flex: 1,
                   }}
                 >
                   {heroItem.ai_summary}
@@ -263,11 +307,12 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
                   color: 'var(--accent)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 4,
+                  gap: 6,
+                  marginTop: 'auto',
                 }}
               >
                 EXPLORE
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </div>
@@ -276,50 +321,62 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
         ) : featuredItems.length > 0 ? (
           <div
             style={{
-              flex: '2 1 220px',
+              flex: '2 1 240px',
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: 8,
-              alignContent: 'start',
-              maxWidth: 320,
+              gap: 1,
+              alignContent: 'stretch',
+              maxWidth: 380,
+              borderLeft: '1px solid var(--border)',
+              background: 'var(--border)',
             }}
           >
-            {featuredItems.slice(0, 4).map((item, i) => (
-              <div
-                key={item.id}
-                className="card-enter"
-                style={{
-                  background: 'var(--surface-raised)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 8,
-                  padding: '10px 12px',
-                  borderLeft: `3px solid var(--cat-${item.category})`,
-                  overflow: 'hidden',
-                  animationDelay: `${100 + i * 60}ms`,
-                }}
-              >
-                <div
-                  className="font-mono"
-                  style={{ fontSize: 10, letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: 4, textTransform: 'uppercase' }}
-                >
-                  {item.category}
-                </div>
-                <div
+            {featuredItems.slice(0, 4).map((item, i) => {
+              const catColor = categoryColor[item.category] || 'var(--accent)'
+              return (
+                <Link
+                  key={item.id}
+                  href={`/library/${item.id}`}
+                  className="card-enter"
                   style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    lineHeight: 1.35,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
+                    background: 'var(--surface)',
+                    padding: '18px 16px',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6,
+                    animationDelay: `${100 + i * 60}ms`,
                   }}
                 >
-                  {item.title}
-                </div>
-              </div>
-            ))}
+                  <div
+                    className="font-mono"
+                    style={{
+                      fontSize: 9,
+                      letterSpacing: '0.10em',
+                      color: catColor,
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    {item.category}
+                  </div>
+                  <div
+                    className="font-syne"
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      lineHeight: 1.35,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {item.title}
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         ) : null}
       </div>
