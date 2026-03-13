@@ -38,6 +38,46 @@ The `category` column is `TEXT NOT NULL` with no CHECK constraint. New category 
 
 ---
 
+### [2026-03-12] — DB audit: category fixes + duplicate purge
+
+**42 → 23 items** after full database pass.
+
+#### Category recategorizations (7)
+| ID (short) | Title | From → To | Reason |
+|---|---|---|---|
+| cef29b53 | Claude Opus 4.6 | skill → **model** | Model release announcement |
+| 2603afc1 | Gemini 3.1 Flash-Lite | skill → **model** | Model release announcement |
+| d5157079 | Top AI Agent Frameworks Ranked | workflow → **technique** | Framework ranking/comparison |
+| 9b6b52b1 | Microsoft Agent Framework | workflow → **technique** | Pattern/methodology guide |
+| 0559dfa2 | Top Open-Source AI Agent Frameworks | workflow → **technique** | Framework comparison |
+| 38a7a346 | AI Agent Frameworks Hands-On | workflow → **technique** | Hands-on comparison |
+| 4e76e155 | 500+ AI Agent Projects | workflow → **niche-use-case** | Use case collection across industries |
+
+#### Deleted duplicates (19)
+- **Claude Opus 4.6** — 1 near-duplicate removed
+- **Windsurf comparisons** — 5 near-duplicate comparison articles removed (kept 2 most relevant)
+- **Claude Code Hooks** — 4 near-duplicates removed (kept 2 best: one hook config, one safety scripts)
+- **Advanced Claude Code Workflows** — 2 near-duplicates removed
+- **AI Financial Operations** — 3 exact title duplicates removed
+- **AI Back-Office Automation** — 2 exact title duplicates removed
+- **AI Scheduling** — 1 near-duplicate removed
+- **AI Agent Frameworks ranked** — 1 near-duplicate removed
+
+#### Also fixed
+- Nulled bogus `supersedes_id` on Gemini item that incorrectly pointed to Claude Opus 4.6
+
+#### Final state
+| Category | Count |
+|---|---|
+| hook | 2 |
+| model | 2 |
+| niche-use-case | 1 |
+| technique | 6 |
+| workflow | 12 |
+| **Total** | **23** |
+
+---
+
 ## Checklist
 
 - [x] `'model'` category added across all 8 touchpoints
