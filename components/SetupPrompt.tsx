@@ -258,6 +258,7 @@ export default function SetupPrompt({ item }: { item: Item }) {
 
   return (
     <section
+      className="setup-prompt-section"
       style={{
         borderRadius: 16,
         overflow: 'hidden',

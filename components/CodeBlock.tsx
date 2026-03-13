@@ -17,6 +17,7 @@ export default function CodeBlock({ code, language = 'bash' }: Props) {
 
   return (
     <div
+      className="code-block-section"
       style={{
         borderRadius: 12,
         border: '1px solid rgba(255,255,255,0.08)',
