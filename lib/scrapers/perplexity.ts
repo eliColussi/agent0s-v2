@@ -14,6 +14,7 @@
  */
 
 import { callSonar } from '../openrouter'
+import { normalizeUrl } from '../dedup'
 
 export interface DiscoveryResult {
   source_url: string
@@ -170,8 +171,9 @@ export async function runDiscovery(): Promise<DiscoveryResult[]> {
       for (const url of citations) {
         if (results.length >= MAX_DISCOVERY_URLS) break
         if (!url.startsWith('http')) continue
-        if (seenUrls.has(url)) continue
-        seenUrls.add(url)
+        const normalized = normalizeUrl(url)
+        if (seenUrls.has(normalized)) continue
+        seenUrls.add(normalized)
 
         results.push({
           source_url: url,

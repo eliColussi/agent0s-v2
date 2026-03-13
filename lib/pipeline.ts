@@ -12,6 +12,7 @@ import { callJSON, callSchema, batchAsync, MODELS } from './openrouter'
 import { createServerClient } from './supabase'
 import { runDiscovery, DiscoveryResult } from './scrapers/perplexity'
 import { fetchGitHubContent } from './scrapers/github'
+import { DedupRegistry } from './dedup'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,25 +101,54 @@ export async function runScrapeAndProcess() {
 
   try {
     // ── Pre-load existing data for deduplication ──────────────────────────────
-    const [existingUrlsRes, existingTitlesRes] = await Promise.all([
+    const dedup = new DedupRegistry()
+
+    const [existingUrlsRes, existingTitlesRes, existingContentRes] = await Promise.all([
       db.from('library_items').select('source_url'),
       db.from('library_items').select('id, title').order('created_at', { ascending: false }),
+      db.from('library_items').select('source_url, title, raw_content').order('created_at', { ascending: false }).limit(500),
     ])
 
-    const existingUrls = new Set(
-      (existingUrlsRes.data || []).map((r: { source_url: string }) => r.source_url)
-    )
+    // Load all existing items into the dedup registry
     const existingItems: { id: string; title: string }[] = existingTitlesRes.data || []
-    const existingTitlesList = existingItems.map(i => i.title).join('\n')
+    dedup.loadExisting(
+      (existingContentRes.data || []).map((r: { source_url: string; title: string; raw_content?: string }) => r)
+    )
+    // Also load any URLs beyond the 500-item content fetch
+    for (const r of (existingUrlsRes.data || []) as { source_url: string }[]) {
+      if (!dedup.hasUrl(r.source_url)) {
+        dedup.register(r.source_url, '', undefined)
+      }
+    }
 
     // ── STAGE 1: Discovery ────────────────────────────────────────────────────
     console.log('Stage 1: Discovery...')
     const discovered = await runDiscovery()
 
-    // Deduplicate against DB (exact URL match — free and instant)
-    const newCandidates = discovered.filter(d => !existingUrls.has(d.source_url))
+    // Dedup Layer 1: Normalized URL match (free, O(1))
+    const afterUrlDedup = discovered.filter(d => !dedup.hasUrl(d.source_url))
+
+    // Dedup Layer 2: Fuzzy title match against existing library (free, catches near-exact dupes + bigram similarity)
+    const afterTitleDedup = afterUrlDedup.filter(d => {
+      const match = dedup.matchesTitle(d.title)
+      if (match) {
+        console.log(`  Fuzzy dedup: "${d.title}" ≈ "${match}"`)
+        return false
+      }
+      return true
+    })
+
+    // Dedup Layer 2b: Content fingerprint match (free, catches same content from different URLs)
+    const newCandidates = afterTitleDedup.filter(d => {
+      if (d.context && dedup.hasFingerprint(d.context)) {
+        console.log(`  Fingerprint dedup: "${d.title}" — content already exists`)
+        return false
+      }
+      return true
+    })
+
     runLog.items_found = newCandidates.length
-    console.log(`  Found ${discovered.length} URLs, ${newCandidates.length} new after dedup`)
+    console.log(`  Found ${discovered.length} URLs → ${afterUrlDedup.length} after URL dedup → ${afterTitleDedup.length} after title dedup → ${newCandidates.length} after fingerprint dedup`)
 
     if (newCandidates.length === 0) {
       await logRun(db, runLog)
@@ -130,7 +160,7 @@ export async function runScrapeAndProcess() {
     const triageResults = await batchAsync(newCandidates, 10, async (candidate) => {
       const result = await callJSON<TriageResult>(
         MODELS.triage,
-        buildTriagePrompt(candidate, existingTitlesList),
+        buildTriagePrompt(candidate, dedup.titlesList),
         {
           fallback: MODELS.triage_fallback,
           system: TRIAGE_SYSTEM_PROMPT,
@@ -180,13 +210,29 @@ export async function runScrapeAndProcess() {
       return { item, enriched: result }
     })
 
-    // ── Save to Supabase ──────────────────────────────────────────────────────
+    // ── Save to Supabase (with Layer 5: post-enrichment dedup) ─────────────────
     for (const result of enriched) {
       if (!result) { runLog.items_rejected++; continue }
       const { item, enriched: e } = result
 
       const qualityScore = Math.round(e.quality_score ?? 0)
       if (qualityScore < 7) {
+        runLog.items_rejected++
+        continue
+      }
+
+      // Layer 5a: Post-enrichment title dedup — the AI may have generated a title
+      // that matches something already in the library (or something saved earlier in this run)
+      const titleMatch = dedup.matchesTitle(e.title)
+      if (titleMatch) {
+        console.log(`  Post-enrich dedup: "${e.title}" ≈ "${titleMatch}" — skipping`)
+        runLog.items_rejected++
+        continue
+      }
+
+      // Layer 5b: Post-enrichment content fingerprint — catches same content from different URLs
+      if (item.raw_content && dedup.hasFingerprint(item.raw_content)) {
+        console.log(`  Post-enrich fingerprint dedup: "${e.title}" — content already exists`)
         runLog.items_rejected++
         continue
       }
@@ -227,6 +273,8 @@ export async function runScrapeAndProcess() {
         console.error('Insert error:', error.message)
         runLog.items_rejected++
       } else {
+        // Register in dedup registry so later items in this same batch can't duplicate it
+        dedup.register(item.source_url, e.title, item.raw_content)
         runLog.items_saved++
       }
     }
@@ -310,6 +358,9 @@ Be strict — most content should be discarded. Only pass items that are genuine
 Respond only in valid JSON.`
 
 function buildTriagePrompt(candidate: DiscoveryResult, existingTitles: string): string {
+  // Send up to 8000 chars of existing titles — enough for ~200+ items
+  const titleContext = existingTitles.slice(0, 8000)
+
   return `Evaluate this discovered item for our AI tools library.
 
 URL: ${candidate.source_url}
@@ -317,8 +368,15 @@ Title: ${candidate.title}
 Source type: ${candidate.source_type}
 Discovery context: ${candidate.context.slice(0, 800)}
 
-EXISTING LIBRARY TITLES (check for duplicates and version updates):
-${existingTitles.slice(0, 3000)}
+EXISTING LIBRARY TITLES — check CAREFULLY for duplicates and version updates:
+${titleContext}
+
+DUPLICATE DETECTION RULES (critical — we must never post duplicate content):
+1. If this item covers the SAME tool, technique, or topic as any existing title, mark is_duplicate: true
+2. A different URL does NOT mean different content — two blog posts about the same Claude Code hook are duplicates
+3. If the existing library already has an item about THIS SPECIFIC tool/repo/technique, it is a duplicate
+4. Only mark is_duplicate: false if this item provides genuinely NEW information not covered by any existing title
+5. When in doubt, mark as duplicate — false negatives are worse than false positives
 
 Score this item and respond in JSON:
 {
