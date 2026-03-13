@@ -259,45 +259,46 @@ export default function SetupPrompt({ item }: { item: Item }) {
   return (
     <section
       style={{
-        background: '#080c16',
-        border: '1px solid rgba(6,182,212,0.15)',
-        borderLeft: '3px solid rgba(6,182,212,0.5)',
-        borderRadius: 12,
+        borderRadius: 16,
         overflow: 'hidden',
+        position: 'relative',
+        border: '1px solid rgba(6,182,212,0.2)',
       }}
     >
-      {/* Header */}
+      {/* Header bar */}
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '14px 20px',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          padding: '18px 24px',
+          background: 'rgba(6,182,212,0.06)',
+          borderBottom: '1px solid rgba(6,182,212,0.12)',
           flexWrap: 'wrap',
-          gap: 10,
+          gap: 12,
         }}
       >
         <div>
           <h2
             className="font-mono"
             style={{
-              fontSize: 11,
+              fontSize: 12,
               letterSpacing: '0.10em',
-              color: 'var(--cat-skill)',
+              color: '#67e8f9',
               marginBottom: 4,
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              fontWeight: 600,
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
             </svg>
             AI SETUP PROMPT
           </h2>
-          <p className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', margin: 0 }}>
-            Paste into {toolTarget} — it will scan your project and ask how to proceed
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+            Paste into <span style={{ color: '#67e8f9', fontWeight: 500 }}>{toolTarget}</span> — it will scan your project and set everything up
           </p>
         </div>
 
@@ -306,32 +307,38 @@ export default function SetupPrompt({ item }: { item: Item }) {
           aria-label={copied ? 'Prompt copied to clipboard' : 'Copy setup prompt to clipboard'}
           className="font-mono"
           style={{
-            fontSize: 12,
-            fontWeight: 600,
-            padding: '10px 20px',
-            borderRadius: 8,
-            border: copied ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(6,182,212,0.35)',
-            background: copied ? 'rgba(16,185,129,0.15)' : 'rgba(6,182,212,0.12)',
-            color: copied ? '#6ee7b7' : '#67e8f9',
+            fontSize: 13,
+            fontWeight: 700,
+            padding: '12px 28px',
+            borderRadius: 10,
+            border: 'none',
+            background: copied
+              ? 'linear-gradient(135deg, #10b981, #059669)'
+              : 'linear-gradient(135deg, #06b6d4, #0891b2)',
+            color: '#fff',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            transition: 'all 0.2s ease',
-            minHeight: 44,
+            transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
+            minHeight: 46,
             whiteSpace: 'nowrap',
+            boxShadow: copied
+              ? '0 0 24px rgba(16,185,129,0.3), 0 4px 12px rgba(0,0,0,0.2)'
+              : '0 0 24px rgba(6,182,212,0.25), 0 4px 12px rgba(0,0,0,0.2)',
+            letterSpacing: '0.02em',
           }}
         >
           {copied ? (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <path d="M20 6L9 17l-5-5"/>
               </svg>
               Copied!
             </>
           ) : (
             <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
               </svg>
@@ -341,43 +348,78 @@ export default function SetupPrompt({ item }: { item: Item }) {
         </button>
       </div>
 
-      {/* Prompt preview */}
-      <pre
-        className="font-mono"
+      {/* Prompt body */}
+      <div
         style={{
-          margin: 0,
-          padding: '16px 20px',
-          fontSize: 12,
-          lineHeight: '20px',
-          color: '#a5b4c8',
-          overflowX: 'auto',
-          maxHeight: 280,
-          overflowY: 'auto',
-          background: 'transparent',
-          border: 'none',
-          borderRadius: 0,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
+          background: '#06090f',
+          position: 'relative',
         }}
       >
-        <code>{prompt}</code>
-      </pre>
+        {/* Subtle left accent line */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 3,
+            background: 'linear-gradient(180deg, rgba(6,182,212,0.5), rgba(6,182,212,0.1), rgba(6,182,212,0.3))',
+          }}
+        />
+
+        <pre
+          className="font-mono"
+          style={{
+            margin: 0,
+            padding: '20px 24px 20px 20px',
+            fontSize: 13,
+            lineHeight: '22px',
+            color: '#c8d6e5',
+            overflowX: 'auto',
+            maxHeight: 320,
+            overflowY: 'auto',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: 0,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
+          }}
+        >
+          <code>{prompt}</code>
+        </pre>
+      </div>
 
       {/* Footer */}
       <div
         className="font-mono"
         style={{
-          padding: '8px 20px',
-          borderTop: '1px solid rgba(255,255,255,0.04)',
+          padding: '10px 24px',
+          background: 'rgba(6,182,212,0.04)',
+          borderTop: '1px solid rgba(6,182,212,0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: 10,
+          fontSize: 11,
           color: 'var(--text-dim)',
         }}
       >
-        <span>~{prompt.length.toLocaleString()} chars</span>
-        <span style={{ color: 'rgba(6,182,212,0.4)' }}>Works with Claude Code & Codex CLI</span>
+        <span>{prompt.length.toLocaleString()} characters</span>
+        <span style={{ color: 'rgba(6,182,212,0.5)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: '50%',
+              background: '#06b6d4',
+              display: 'inline-block',
+              boxShadow: '0 0 6px rgba(6,182,212,0.4)',
+              opacity: 0.6,
+            }}
+          />
+          Compatible with Claude Code & Codex CLI
+        </span>
       </div>
     </section>
   )
