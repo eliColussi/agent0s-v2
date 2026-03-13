@@ -12,7 +12,7 @@ import { callJSON, callSchema, batchAsync, MODELS } from './openrouter'
 import { createServerClient } from './supabase'
 import { runDiscovery, DiscoveryResult } from './scrapers/perplexity'
 import { fetchGitHubContent } from './scrapers/github'
-import { DedupRegistry } from './dedup'
+import { DedupRegistry, fetchAllRows } from './dedup'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,26 +100,40 @@ export async function runScrapeAndProcess() {
   }
 
   try {
-    // ── Pre-load existing data for deduplication ──────────────────────────────
+    // ── Pre-load ALL existing data for deduplication ──────────────────────────
+    // Uses paginated fetching to bypass Supabase's 1000-row default limit.
     const dedup = new DedupRegistry()
 
-    const [existingUrlsRes, existingTitlesRes, existingContentRes] = await Promise.all([
-      db.from('library_items').select('source_url'),
-      db.from('library_items').select('id, title').order('created_at', { ascending: false }),
-      db.from('library_items').select('source_url, title, raw_content').order('created_at', { ascending: false }).limit(500),
+    const [allUrls, allTitles, recentContent] = await Promise.all([
+      // Every URL in the DB (paginated — no row limit)
+      fetchAllRows<{ source_url: string }>(
+        db.from('library_items'), 'source_url'
+      ),
+      // Every title in the DB (paginated — no row limit)
+      fetchAllRows<{ id: string; title: string }>(
+        db.from('library_items'), 'id, title'
+      ),
+      // Recent content for fingerprinting (last 1000 — fingerprints are expensive to load)
+      fetchAllRows<{ source_url: string; title: string; raw_content: string }>(
+        db.from('library_items'), 'source_url, title, raw_content', 500
+      ),
     ])
 
-    // Load all existing items into the dedup registry
-    const existingItems: { id: string; title: string }[] = existingTitlesRes.data || []
-    dedup.loadExisting(
-      (existingContentRes.data || []).map((r: { source_url: string; title: string; raw_content?: string }) => r)
-    )
-    // Also load any URLs beyond the 500-item content fetch
-    for (const r of (existingUrlsRes.data || []) as { source_url: string }[]) {
+    // Load content items first (includes URL + title + fingerprint)
+    dedup.loadExisting(recentContent)
+    // Load remaining URLs and titles not covered by content fetch
+    const existingItems = allTitles
+    for (const r of allUrls) {
       if (!dedup.hasUrl(r.source_url)) {
         dedup.register(r.source_url, '', undefined)
       }
     }
+    for (const r of allTitles) {
+      if (!dedup.matchesTitle(r.title)) {
+        dedup.register('', r.title, undefined)
+      }
+    }
+    console.log(`  Dedup registry loaded: ${dedup.urlCount} URLs, ${dedup.titleCount} titles, fingerprints for recent ${recentContent.length} items`)
 
     // ── STAGE 1: Discovery ────────────────────────────────────────────────────
     console.log('Stage 1: Discovery...')
@@ -196,9 +210,21 @@ export async function runScrapeAndProcess() {
       })
     )
 
+    // Post-deep-research fingerprint check — now that we have the real content
+    // (GitHub README, etc.), check fingerprints again before spending on enrichment
+    const afterDeepResearchDedup = readyItems.filter(item => {
+      if (item.raw_content && dedup.hasFingerprint(item.raw_content)) {
+        console.log(`  Post-research fingerprint dedup: "${item.title}" — content matches existing`)
+        runLog.items_rejected++
+        return false
+      }
+      return true
+    })
+    console.log(`  Post-research dedup: ${afterDeepResearchDedup.length}/${readyItems.length} unique`)
+
     // ── STAGE 4: Enrichment ───────────────────────────────────────────────────
     console.log('Stage 4: Enrichment...')
-    const enriched = await batchAsync(readyItems, 5, async (item) => {
+    const enriched = await batchAsync(afterDeepResearchDedup, 5, async (item) => {
       const result = await callSchema<EnrichResult>({
         model: MODELS.enrich,
         fallback: MODELS.enrich_fallback,
@@ -233,6 +259,19 @@ export async function runScrapeAndProcess() {
       // Layer 5b: Post-enrichment content fingerprint — catches same content from different URLs
       if (item.raw_content && dedup.hasFingerprint(item.raw_content)) {
         console.log(`  Post-enrich fingerprint dedup: "${e.title}" — content already exists`)
+        runLog.items_rejected++
+        continue
+      }
+
+      // Layer 6: Final DB existence check — catches concurrent pipeline runs
+      // that may have inserted between our initial load and now
+      const { data: dbCheck } = await db
+        .from('library_items')
+        .select('id')
+        .eq('source_url', item.source_url)
+        .limit(1)
+      if (dbCheck && dbCheck.length > 0) {
+        console.log(`  DB check dedup: "${e.title}" — source_url already in DB`)
         runLog.items_rejected++
         continue
       }

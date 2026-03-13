@@ -37,6 +37,22 @@ export function normalizeUrl(raw: string): string {
   }
 }
 
+// ─── GitHub URL Canonicalization ─────────────────────────────────────────────
+// github.com/user/repo, github.com/user/repo/tree/main, github.com/user/repo/blob/main/README.md
+// all refer to the same repository. We canonicalize to github.com/user/repo.
+
+export function canonicalizeGitHubUrl(raw: string): string | null {
+  try {
+    const u = new URL(raw)
+    if (u.hostname !== 'github.com') return null
+    const parts = u.pathname.split('/').filter(Boolean)
+    if (parts.length < 2) return null
+    return `https://github.com/${parts[0]}/${parts[1]}`
+  } catch {
+    return null
+  }
+}
+
 // ─── Content Fingerprint ─────────────────────────────────────────────────────
 // Creates a stable hash from the core content, ignoring whitespace/casing.
 // Two articles with different URLs but identical content get the same fingerprint.
@@ -116,23 +132,33 @@ function bigramSimilarity(a: string, b: string): number {
 
 export class DedupRegistry {
   private urls = new Set<string>()
+  private githubRepos = new Set<string>()
   private fingerprints = new Set<string>()
   private titles: string[] = []
 
   /** Load existing items from DB at pipeline start */
   loadExisting(items: { source_url: string; title: string; raw_content?: string }[]) {
     for (const item of items) {
-      this.urls.add(normalizeUrl(item.source_url))
-      this.titles.push(item.title)
+      this.addUrl(item.source_url)
+      if (item.title) this.titles.push(item.title)
       if (item.raw_content) {
         this.fingerprints.add(contentFingerprint(item.raw_content))
       }
     }
   }
 
-  /** Check if a URL is already known */
+  private addUrl(url: string) {
+    this.urls.add(normalizeUrl(url))
+    const ghCanon = canonicalizeGitHubUrl(url)
+    if (ghCanon) this.githubRepos.add(ghCanon)
+  }
+
+  /** Check if a URL is already known (includes GitHub repo canonicalization) */
   hasUrl(url: string): boolean {
-    return this.urls.has(normalizeUrl(url))
+    if (this.urls.has(normalizeUrl(url))) return true
+    const ghCanon = canonicalizeGitHubUrl(url)
+    if (ghCanon && this.githubRepos.has(ghCanon)) return true
+    return false
   }
 
   /** Check if content fingerprint is already known */
@@ -147,8 +173,8 @@ export class DedupRegistry {
 
   /** Register a new item (after it passes all checks and gets inserted) */
   register(url: string, title: string, content?: string) {
-    this.urls.add(normalizeUrl(url))
-    this.titles.push(title)
+    this.addUrl(url)
+    if (title) this.titles.push(title)
     if (content) {
       this.fingerprints.add(contentFingerprint(content))
     }
@@ -157,4 +183,25 @@ export class DedupRegistry {
   get titleCount() { return this.titles.length }
   get urlCount() { return this.urls.size }
   get titlesList() { return this.titles.join('\n') }
+}
+
+// ─── Paginated DB Loader ─────────────────────────────────────────────────────
+// Supabase caps at 1000 rows per query. This fetches ALL rows in pages.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function fetchAllRows<T>(
+  table: any,
+  columns: string,
+  pageSize = 1000,
+): Promise<T[]> {
+  const all: T[] = []
+  let offset = 0
+  while (true) {
+    const { data, error } = await table.select(columns).range(offset, offset + pageSize - 1)
+    if (error || !data || data.length === 0) break
+    all.push(...(data as T[]))
+    if (data.length < pageSize) break  // last page
+    offset += pageSize
+  }
+  return all
 }
