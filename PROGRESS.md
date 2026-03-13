@@ -2,9 +2,34 @@
 
 ## Changelog
 
+### [2026-03-13] — Discovery overhaul: dedicated queries per tool + triage rebalancing
+
+**Commit:** (see below)
+
+#### Problem
+- Discovery queries were keyword-stuffed and generic — Codex CLI and OpenCLAW content wasn't being found consistently
+- Triage system prompt treated all tools equally, so niche Codex/OpenCLAW content was being discarded as "not novel enough"
+- No dedicated queries for projects/use cases people built with each tool
+
+#### Changes
+| File | What changed |
+|------|-------------|
+| `lib/scrapers/perplexity.ts` | Redesigned anchor queries: 9 dedicated queries (2 per tool for releases + projects, plus agentic frameworks, model releases, community signal). Up from 7 generic anchors. Total per run: 14 queries. |
+| `lib/pipeline.ts` | Rewrote `TRIAGE_SYSTEM_PROMPT` with three editorial pillars (Claude Code, Codex CLI, OpenCLAW) and explicit scoring guidance: content about these tools gets higher `audience_fit_score` (7+) by default. Projects/use cases are explicitly called out as valuable. |
+
+#### Results from first run with new queries
+| Tool | Items saved | Examples |
+|---|---|---|
+| claude-code | 2 | "Claude Code 2026 Update: Opus 4.6" (9), "Structured Production Workflow" (8) |
+| chatgpt-codex | 4 | "Codex CLI 0.114.0" (8), "Automate Code Reviews with Codex GitHub Action" (8) |
+| openclaw | 2 | "OpenCLAW Architectural Guide and B2B Use Cases" (7), "OpenClaw v2026.3.7 ContextEngine" (7) |
+| general | 4 | "LLM Landscape March 2026" (7), "Addy Osmani's AI Workflow" (8) |
+
+---
+
 ### [2026-03-13] — Hero "Today's Top Pick" + live stats across homepage
 
-**Commits:** `f662b4b`, (see below)
+**Commits:** `f662b4b`, `76366ac`
 
 #### Problem
 - Hero section showed stale content from yesterday — no logic to surface today's best item
@@ -115,11 +140,15 @@ The `category` column is `TEXT NOT NULL` with no CHECK constraint. New category 
 
 ## Checklist
 
+- [x] Discovery queries redesigned: 9 dedicated anchors (2 per tool + broad coverage)
+- [x] Triage prompt rebalanced: Claude Code / Codex CLI / OpenCLAW as editorial pillars
+- [x] Trigger.dev deployed with new queries (version `20260313.3`)
+- [x] Second scrape run: 12 items with all three tools represented
 - [x] Hero always shows today's top-scored item ("Today's Top Pick" card)
 - [x] Fixed `getFeaturedItems()` result being discarded
 - [x] Category tile counts now live from DB (no more hardcoded seed data)
 - [x] Ticker + hero stats use real DB total
-- [x] Manual March 13 scrape completed (13 items)
+- [x] Manual March 13 scrapes completed (13 + 12 items)
 - [x] TypeScript build clean
 - [x] `'model'` category added across all 8 touchpoints
 - [x] TypeScript build clean (`npx tsc --noEmit`)

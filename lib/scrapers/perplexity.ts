@@ -2,15 +2,15 @@
  * Stage 1: Discovery — Perplexity Sonar Pro
  *
  * Tiered query architecture:
- *   Tier 1 (Anchors, 7 queries) — run every day. Catches breaking releases,
- *   changelogs, and high-signal content the moment it drops.
- *   Covers: Claude Code, OpenAI Codex, OpenCLAW, agentic AI tooling.
+ *   Tier 1 (Anchors, 9 queries) — run every day. Dedicated queries per tool
+ *   (Claude Code, OpenAI Codex CLI, OpenCLAW) covering releases AND projects/
+ *   use cases. Plus agentic frameworks broadly and model releases.
  *
  *   Tier 2 (Rotating pool, 49 queries) — 5 selected per day on a 10-day cycle.
  *   Covers deep domain knowledge: Claude Code depth, OpenCLAW ecosystem,
  *   niche use cases, business AI, local models, integrations, prompting.
  *
- * Total per run: 12 queries (~$1.80/day budget target).
+ * Total per run: 14 queries (~$2.10/day budget target).
  */
 
 import { callSonar } from '../openrouter'
@@ -30,20 +30,33 @@ export interface DiscoveryResult {
 // Core coverage: Claude Code, OpenAI Codex, OpenCLAW, agentic AI tooling.
 
 const ANCHOR_QUERIES = [
-  // Claude Code — releases, hooks, skills, CLAUDE.md, MCP servers, plugins
-  'Claude Code Anthropic release update changelog hooks skills plugins MCP CLAUDE.md github 2026',
-  // OpenAI Codex CLI — releases, agents, code generation, developer tools
-  'OpenAI Codex CLI agent release update changelog developer tools code generation github 2026',
-  // OpenCLAW — agentic AI framework, releases, integrations, community
-  'OpenCLAW agentic AI framework release update new feature integration github community 2026',
-  // Claude Code + Codex deep techniques — prompts, workflows, advanced patterns
-  'Claude Code Codex CLI advanced technique prompt engineering workflow pattern real examples 2026',
-  // Agentic AI tooling — Cursor, Windsurf, agent frameworks, new entrants
-  'AI coding agent tool framework Cursor Windsurf agentic release changelog github stars 2026',
-  // High-signal developer community: real workflows, niche use cases
-  'Claude Code OpenCLAW Codex AI coding niche use case workflow site:news.ycombinator.com OR site:lobste.rs 2026',
-  // OpenAI/Gemini/Anthropic developer platform releases
-  'OpenAI Gemini Anthropic developer API platform new feature model release 2026',
+  // ── Claude Code (2 queries) ─────────────────────────────────────────────
+  // Releases, features, official updates
+  'Claude Code new release update hooks skills MCP plugins CLAUDE.md changelog 2026',
+  // Projects, workflows, things people built with Claude Code
+  'Claude Code project workflow real example developer built with showcase github 2026',
+
+  // ── OpenAI Codex CLI (2 queries) ────────────────────────────────────────
+  // Releases, features, CLI updates, agent capabilities
+  '"Codex CLI" OR "OpenAI Codex" new release update feature agent autonomous coding 2026',
+  // Projects, use cases, things people built or automated with Codex CLI
+  '"Codex CLI" OR "OpenAI Codex" project built with use case workflow developer showcase github 2026',
+
+  // ── OpenCLAW (2 queries) ────────────────────────────────────────────────
+  // Releases, framework updates, new capabilities
+  'OpenCLAW agentic framework release update new feature autonomous agent github 2026',
+  // Projects, implementations, what people are building with OpenCLAW
+  'OpenCLAW project implementation use case multi-agent workflow built with showcase github 2026',
+
+  // ── Agentic AI broadly ──────────────────────────────────────────────────
+  // Frameworks, new entrants, comparisons
+  'agentic AI coding framework Cursor Windsurf LangGraph CrewAI new release comparison 2026',
+
+  // ── Model releases ─────────────────────────────────────────────────────
+  'new AI model release GPT Gemini Claude Llama Qwen benchmark developer API 2026',
+
+  // ── Community signal ────────────────────────────────────────────────────
+  'Claude Code OR "Codex CLI" OR OpenCLAW AI coding project site:news.ycombinator.com OR site:reddit.com 2026',
 ]
 
 // ─── Tier 2: Rotating Pool ─────────────────────────────────────────────────
