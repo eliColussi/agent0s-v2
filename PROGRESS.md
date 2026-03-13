@@ -2,6 +2,27 @@
 
 ## Changelog
 
+### [2026-03-13] — Date range filter + AI setup prompt contrast fixes
+
+**Commits:** `db8100e`, `e9e44e6`, `12f1111`
+
+#### Changes
+| File | What changed |
+|------|-------------|
+| `types/index.ts` | Added `DateRange` type (`'today' \| 'week' \| 'month'`) and `date_range` field to `LibraryFilters` |
+| `lib/queries.ts` | `dateRangeStart()` helper converts range to ISO timestamp; `getLibraryItems()` applies `.gte('created_at', ...)` when date filter is active |
+| `components/CategoryFilter.tsx` | Date pills (All time / Today / Last 7 days / Last 30 days) above category pills, cyan styling. Subtle italic disclaimer shown only when a date filter is active: *"Indexed date — content may have been published earlier."* |
+| `app/library/page.tsx` | Reads `date_range` from searchParams, passes to `getLibraryItems()` |
+| `components/SetupPrompt.tsx` + `CodeBlock.tsx` | Added `setup-prompt-section` / `code-block-section` classes |
+| `app/globals.css` | Force-dark CSS for both panels — stays dark `#06090f` regardless of light/dark theme, fixing invisible text in light mode |
+
+#### Notes
+- Date filter composable with all existing filters; shows as removable active chip
+- Disclaimer only visible when a date filter is active — zero footprint otherwise
+- `created_at` already indexed — no DB migration needed
+
+---
+
 ### [2026-03-13] — Experimental "Liquid Glass" UI/UX overhaul
 
 **Commit:** (see below) · **Rollback point:** `92e0fa5`
