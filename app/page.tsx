@@ -143,7 +143,13 @@ export default async function HomePage() {
 
       {/* Daily Digest hero */}
       <section style={{ marginBottom: 56 }}>
-        <DailyDigest digest={displayDigest} featuredItems={featuredItems} heroItem={heroItem} totalItems={totalItems} />
+        <DailyDigest
+          digest={displayDigest}
+          featuredItems={featuredItems}
+          heroItem={heroItem}
+          totalItems={totalItems}
+          isStale={!!digest && digest.date !== new Date().toISOString().split('T')[0]}
+        />
       </section>
 
       {/* Section divider */}

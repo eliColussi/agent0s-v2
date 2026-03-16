@@ -18,22 +18,22 @@ interface Props {
   featuredItems: LibraryItem[]
   heroItem?: LibraryItem | null
   totalItems?: number
+  isStale?: boolean
 }
 
-export default function DailyDigest({ digest, featuredItems, heroItem, totalItems }: Props) {
-  const dateStr = digest?.date
-    ? new Date(digest.date + 'T12:00:00').toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : new Date().toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
+export default function DailyDigest({ digest, featuredItems, heroItem, totalItems, isStale }: Props) {
+  // Always show today's date — the briefing should always feel current
+  const dateStr = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+
+  // If showing a previous day's digest, note when it was last synced
+  const lastSyncStr = isStale && digest?.date
+    ? new Date(digest.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : null
 
   const headline = digest?.headline ?? 'Intelligence Library Online — Awaiting First Sync'
   const intro =
@@ -97,9 +97,25 @@ export default function DailyDigest({ digest, featuredItems, heroItem, totalItem
             >
               Daily Briefing
             </div>
-            <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
-              {dateStr.toUpperCase()}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="font-mono" style={{ fontSize: 11, color: 'var(--text-dim)', letterSpacing: '0.06em' }}>
+                {dateStr.toUpperCase()}
+              </span>
+              {lastSyncStr && (
+                <span
+                  className="font-mono"
+                  style={{
+                    fontSize: 9,
+                    color: 'var(--text-dim)',
+                    letterSpacing: '0.04em',
+                    fontStyle: 'italic',
+                    opacity: 0.6,
+                  }}
+                >
+                  · last synced {lastSyncStr}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Headline */}
