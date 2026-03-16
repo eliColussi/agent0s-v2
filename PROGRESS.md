@@ -2,6 +2,27 @@
 
 ## Changelog
 
+### [2026-03-15] — Fix pipeline timeout + stale date display
+
+**Commits:** `301a87a` · **Trigger deploy:** `20260316.1` · **Manual run:** `run_cmmshovnm85qi0joky4xs41kn`
+
+#### Problem
+- March 15th cron run (`run_cmmrvs0c85uah0pmtrgf0s0s6`) `TIMED_OUT` at exactly 600s — no fetch timeouts on individual API calls, so a hanging Perplexity query stalled the whole pipeline
+- Homepage showed March 14th in the Mission Briefing because `getDailyDigest()` returns the most recent digest and the date displayed came from `digest.date`, not today
+
+#### Changes
+| File | What changed |
+|------|-------------|
+| `trigger.config.ts` | `maxDuration` increased from 600 → 900 seconds (15 min) |
+| `components/DailyDigest.tsx` | Header always shows today's date. Accepts `isStale` prop — if true, shows subtle *"· last synced [date]"* fine-print note |
+| `app/page.tsx` | Computes `isStale` (digest date ≠ today) and passes to DailyDigest |
+
+#### Actions taken
+- Redeployed Trigger.dev with 900s timeout (version `20260316.1`)
+- Manually triggered makeup run for March 15th
+
+---
+
 ### [2026-03-13] — Date range filter + AI setup prompt contrast fixes
 
 **Commits:** `db8100e`, `e9e44e6`, `12f1111`
